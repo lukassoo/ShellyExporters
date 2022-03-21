@@ -5,5 +5,6 @@ WORKDIR /App
 
 ENV DOTNET_EnableDiagnostics = 0
 EXPOSE 9917/tcp
+VOLUME /Config
 
 ENTRYPOINT ["dotnet", "ShellyPlugExporter.dll"]
