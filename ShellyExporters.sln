@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShellyPlugExporter", "ShellyPlugExporter\ShellyPlugExporter.csproj", "{C00C69A4-C5B4-472F-9889-2EF0735B54CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Utilities\Utilities.csproj", "{86805521-B985-4ACB-9119-EC8EA5B79CB9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Description = Prometheus metric exporters for shelly devices
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C00C69A4-C5B4-472F-9889-2EF0735B54CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C00C69A4-C5B4-472F-9889-2EF0735B54CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C00C69A4-C5B4-472F-9889-2EF0735B54CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C00C69A4-C5B4-472F-9889-2EF0735B54CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86805521-B985-4ACB-9119-EC8EA5B79CB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86805521-B985-4ACB-9119-EC8EA5B79CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86805521-B985-4ACB-9119-EC8EA5B79CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86805521-B985-4ACB-9119-EC8EA5B79CB9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8C5E0A6A-0098-4827-97B5-CB7A1B38D681}
+	EndGlobalSection
+EndGlobal
