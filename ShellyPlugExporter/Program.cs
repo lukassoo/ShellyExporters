@@ -7,7 +7,7 @@ namespace ShellyPlugExporter;
 public static class Program
 {
     const string configName = "shellyPlugExporter";
-    const int port = 9917;
+    const int port = 9918;
 
     static List<ShellyPlugConnection> shellyPlugs = new List<ShellyPlugConnection>(1);
     static List<GaugeMetric> powerGauges = new List<GaugeMetric>(1);
