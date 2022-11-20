@@ -9,8 +9,8 @@ public static class Program
     const string configName = "shellyPlugExporter";
     const int port = 9918;
 
-    static List<ShellyPlugConnection> shellyPlugs = new List<ShellyPlugConnection>(1);
-    static List<GaugeMetric> powerGauges = new List<GaugeMetric>(1);
+    static List<ShellyPlugConnection> shellyPlugs = new(1);
+    static List<GaugeMetric> powerGauges = new(1);
 
     static void Main(string[] _)
     {
@@ -33,16 +33,16 @@ public static class Program
 
     static void SetupShellyPlugsFromConfig()
     {
-        Config config = new Config();
+        Config<TargetDevice> config = new();
 
         if (!Configuration.Exists(configName))
         {
             Console.WriteLine("No config found, writing an example one - change it to your settings and start again");
 
             config.targets.Add(new TargetDevice("Your Name for the device", 
-                                          "Address (usually 192.168.X.X - the IP of your device)", 
-                                          "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
-                                          "Password (leave empty if not used)"));
+                                                "Address (usually 192.168.X.X - the IP of your device)", 
+                                                "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
+                                                "Password (leave empty if not used)"));
             Configuration.WriteConfig(configName, config);
 
             Environment.Exit(0);

@@ -13,14 +13,14 @@ public class ShellyPlugConnection
     // A minimum time between requests of 0.8s - the Shelly Plug updates the reading 1/s, it takes time to request the data and respond to Prometheus, 200ms should be enough
     TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
-    bool ignoreRelayState = false;
-    bool relayStatus = false;
+    bool ignoreRelayState;
+    bool relayStatus;
 
-    bool ignoreCurrentPower = false;
-    float currentlyUsedPower = 0;
+    bool ignoreCurrentPower;
+    float currentlyUsedPower;
 
-    bool ignoreTemperature = false;
-    float temperature = 0;
+    bool ignoreTemperature;
+    float temperature;
 
     public ShellyPlugConnection(TargetDevice target)
     {
@@ -113,5 +113,7 @@ public class ShellyPlugConnection
         {
             relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
         }
+        
+        lastRequest = DateTime.Now;
     }
 }

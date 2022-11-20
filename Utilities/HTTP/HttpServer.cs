@@ -64,7 +64,7 @@ public static class HttpServer
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(DateTime.UtcNow.ToString() + " Exception while processing request: " + exception.Message);
+                    Console.WriteLine(DateTime.UtcNow + " Exception while processing request: " + exception.Message);
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     response.StatusDescription = exception.Message;
                 }
