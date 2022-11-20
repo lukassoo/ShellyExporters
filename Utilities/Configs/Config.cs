@@ -1,6 +1,6 @@
 ﻿namespace Utilities.Configs;
 
-public class Config
+public class Config<T>
 {
-    public List<TargetDevice> targets = new List<TargetDevice>();
+    public List<T> targets = new(1);
 }
