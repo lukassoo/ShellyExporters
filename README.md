@@ -1,8 +1,7 @@
 # ShellyExporters
 All Shelly Exporters for Prometheus
 
-This is a repository where I keep all my Shelly Exporters and make them available for others that look for them.  
-Currently there is only one - Shelly Plug Exporter - as this is the only one I use/need.  
+This is a repository where I keep all my Shelly Exporters and make them available for others that look for them.
 Other implementations were quite old and didn't give enough flexibility so I made my own in C#.
 
 The intent is to have each exporter as a docker container since it is technically recommended by Prometheus that
@@ -47,7 +46,7 @@ The default config:
       ignoreTemperatureMetric: false
       ignoreRelayStateMetric: false
      
-Example ready-to-go config:
+Example working config:
 
      targets:
      - name: ServerPlug
@@ -77,3 +76,49 @@ Example multi-device config:
        ignoreRelayStateMetric: true
        
 Please make sure you actually change the credentials to the ones you use when you secure your devices
+
+Once running - if you go to the address you will see something like this:
+
+    # HELP shellyplug_ServerPlug_currently_used_power The amount of power currently flowing through the plug in watts
+    # TYPE shellyplug_ServerPlug_currently_used_power gauge
+    shellyplug_ServerPlug_currently_used_power 262.30
+    # HELP shellyplug_ServerPlug_temperature The internal device temperature
+    # TYPE shellyplug_ServerPlug_temperature gauge
+    shellyplug_ServerPlug_temperature 34.2
+This is the format that Prometheus wants
+
+## Shelly 3EM Exporter
+DockerHub: https://hub.docker.com/r/lukassoo/shelly-3em-exporter  
+Docker Pull Command:
+   
+    docker pull lukassoo/shelly-3em-exporter
+Docker Run Command:
+
+    docker run --name Shelly3EmExporter -d -p 9946:9946 -v /etc/shelly3EmExporter:/Config lukassoo/shelly-3em-exporter
+As the command implies - it will store the config in "/etc/shelly3EmExporter", change it to your liking.  
+**The default config will be generated and the container will stop on the first start**
+
+The configs are a bit longer since the Shelly 3EM has multiple meters, you can choose which ones you want to have metrics from, what you want to know from them (power, voltage, current, power factor) and if you want to know about the relay state:
+
+     targets:
+     - name: ServerPlug
+       url: 192.168.1.7
+       username: SomeUser
+       password: VerySecurePassword
+       targetMeters:
+       - index: 0
+         ignorePower: false
+         ignoreVoltage: false
+         ignoreCurrent: false
+         ignorePowerFactor: false
+       - index: 1
+         ignorePower: false
+         ignoreVoltage: false
+         ignoreCurrent: false
+         ignorePowerFactor: false
+       - index: 2
+         ignorePower: false
+         ignoreVoltage: false
+         ignoreCurrent: false
+         ignorePowerFactor: false
+       ignoreRelayStateMetric: false
