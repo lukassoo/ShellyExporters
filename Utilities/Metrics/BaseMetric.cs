@@ -52,7 +52,7 @@ public abstract class BaseMetric
     // Gets the help line - Prometheus uses this for metric help/description
     string GetHelpLine()
     {
-        return "# HElP " + name + " " + description + '\n';
+        return "# HELP " + name + " " + description + '\n';
     }
 
     // Gets the type line - Prometheus uses this to know what type of metric this is (Gauge, Counter, etc.)
