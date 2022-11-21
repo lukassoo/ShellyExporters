@@ -101,7 +101,7 @@ As the command implies - it will store the config in "/etc/shelly3EmExporter", c
 The configs are a bit longer since the Shelly 3EM has multiple meters, you can choose which ones you want to have metrics from, what you want to know from them (power, voltage, current, power factor) and if you want to know about the relay state:
 
      targets:
-     - name: ServerPlug
+     - name: solar_energy
        url: 192.168.1.7
        username: SomeUser
        password: VerySecurePassword
