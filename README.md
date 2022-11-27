@@ -101,6 +101,9 @@ Docker Run Command:
 As the command implies - it will store the config in "/etc/shelly3EmExporter", change it to your liking.  
 **The default config will be generated and the container will stop on the first start**
 
+Example Grafana dashboard using Prometheus as a data source:
+![image](https://user-images.githubusercontent.com/10761509/204153510-fabbe4a7-2cea-4ffa-afaf-b48292675117.png)
+
 The configs are a bit longer since the Shelly 3EM has multiple meters, you can choose which ones you want to have metrics from, what you want to know from them (power, voltage, current, power factor) and if you want to know about the relay state:
 
      targets:
