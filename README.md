@@ -11,14 +11,31 @@ But if you wish to do so then there is no problem - just configure each instance
 
 ## Shelly Plug Exporter
 DockerHub: https://hub.docker.com/r/lukassoo/shelly-plug-exporter  
-Docker Pull Command:
+Docker Pull Command (Images for x86 and ARM (like a Rapsberry) available):
    
     docker pull lukassoo/shelly-plug-exporter
-Docker Run Command:
+    docker pull lukassoo/shelly-plug-exporter:armv7
+    docker pull lukassoo/shelly-plug-exporter:arm64
+
+Docker Run Command (x86):
 
     docker run --name ShellyPlugExporter -d -p 9918:9918 -v /etc/shellyPlugExporter:/Config lukassoo/shelly-plug-exporter
+    
+Docker Run Command (armv7 - 32bit):
+
+    docker run --name ShellyPlugExporter -d -p 9918:9918 -v /etc/shellyPlugExporter:/Config lukassoo/shelly-plug-exporter:armv7
+
+Docker Run Command (arm64 - 64bit):
+
+    docker run --name ShellyPlugExporter -d -p 9918:9918 -v /etc/shellyPlugExporter:/Config lukassoo/shelly-plug-exporter:arm64
+    
 As the command implies - it will store the config in "/etc/shellyPlugExporter", change it to your liking.  
 **The default config will be generated and the container will stop on the first start**
+
+There are ARM version available: 
+
+    
+    
 
 Example Grafana dashboard using Prometheus as a data source:
 ![image](https://user-images.githubusercontent.com/10761509/204153225-c67c817c-270b-4cf0-999d-8b0eb2b59d17.png)
@@ -92,12 +109,25 @@ This is the format that Prometheus wants
 
 ## Shelly 3EM Exporter
 DockerHub: https://hub.docker.com/r/lukassoo/shelly-3em-exporter  
-Docker Pull Command:
+Docker Pull Command (Images for x86 and ARM (like a Rapsberry) available):
    
     docker pull lukassoo/shelly-3em-exporter
+    docker pull lukassoo/shelly-3em-exporter:armv7
+    docker pull lukassoo/shelly-3em-exporter:arm64
+    
 Docker Run Command:
 
     docker run --name Shelly3EmExporter -d -p 9946:9946 -v /etc/shelly3EmExporter:/Config lukassoo/shelly-3em-exporter
+
+Docker Run Command (armv7 - 32bit):
+
+    docker run --name Shelly3EmExporter -d -p 9946:9946 -v /etc/shelly3EmExporter:/Config lukassoo/shelly-3em-exporter:armv7
+
+Docker Run Command (arm64 - 64bit):
+
+    docker run --name Shelly3EmExporter -d -p 9946:9946 -v /etc/shelly3EmExporter:/Config lukassoo/shelly-3em-exporter:arm64
+
+
 As the command implies - it will store the config in "/etc/shelly3EmExporter", change it to your liking.  
 **The default config will be generated and the container will stop on the first start**
 
