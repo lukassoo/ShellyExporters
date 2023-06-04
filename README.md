@@ -32,11 +32,6 @@ Docker Run Command (arm64 - 64bit):
 As the command implies - it will store the config in "/etc/shellyPlugExporter", change it to your liking.  
 **The default config will be generated and the container will stop on the first start**
 
-There are ARM version available: 
-
-    
-    
-
 Example Grafana dashboard using Prometheus as a data source:
 ![image](https://user-images.githubusercontent.com/10761509/204153225-c67c817c-270b-4cf0-999d-8b0eb2b59d17.png)
 
