@@ -35,6 +35,8 @@ As the command implies - it will store the config in "/etc/shellyPlugExporter", 
 Example Grafana dashboard using Prometheus as a data source:
 ![image](https://user-images.githubusercontent.com/10761509/204153225-c67c817c-270b-4cf0-999d-8b0eb2b59d17.png)
 
+Dashboard link: https://grafana.com/grafana/dashboards/19506-power-usage/
+
 It should have everything anyone would want - all useful metrics from the device
 * Temperature
 * Current Power
@@ -128,6 +130,8 @@ As the command implies - it will store the config in "/etc/shelly3EmExporter", c
 
 Example Grafana dashboard using Prometheus as a data source:
 ![image](https://user-images.githubusercontent.com/10761509/204153510-fabbe4a7-2cea-4ffa-afaf-b48292675117.png)
+
+Dashboard link: https://grafana.com/grafana/dashboards/19500-solar-power/
 
 The configs are a bit longer since the Shelly 3EM has multiple meters, you can choose which ones you want to have metrics from, what you want to know from them (power, voltage, current, power factor) and if you want to know about the relay state:
 
