@@ -23,15 +23,15 @@ public abstract class BaseMetric
         typeLine = GetTypeLine();
     }
 
-    public string GetMetric()
+    public async Task<string> GetMetric()
     {
-        string metric = helpLine + typeLine + GetMetricString();
+        string metric = helpLine + typeLine + await GetMetricString();
 
-        if (!metric.EndsWith('\n'))
+        if (!metric.EndsWith(Environment.NewLine))
         {
-            metric.Append('\n');
+            metric += Environment.NewLine;
         }
-
+        
         return metric;
     }
 
@@ -47,7 +47,7 @@ public abstract class BaseMetric
     /// Gets the metric string - should contain the metric name and value
     /// <br/> This is the thing that Prometheus will see when it requests the metrics
     /// </summary>
-    protected abstract string GetMetricString();
+    protected abstract Task<string> GetMetricString();
 
     // Gets the help line - Prometheus uses this for metric help/description
     string GetHelpLine()

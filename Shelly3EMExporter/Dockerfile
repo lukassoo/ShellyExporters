@@ -1,6 +1,6 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:7.0.0-alpine3.16-amd64
+﻿FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine-arm32v7
 
-COPY bin/Release/net7.0/publish/ App/
+COPY bin/Release/net8.0/publish/ App/
 WORKDIR /App
 
 ENV DOTNET_EnableDiagnostics = 0

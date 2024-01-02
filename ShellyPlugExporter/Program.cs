@@ -1,6 +1,6 @@
-﻿using Utilities;
-using Utilities.Configs;
+﻿using Utilities.Configs;
 using Utilities.Metrics;
+using Utilities.Networking;
 
 namespace ShellyPlugExporter;
 
@@ -10,9 +10,9 @@ public static class Program
     const int port = 9918;
 
     static List<ShellyPlugConnection> shellyPlugs = new(1);
-    static List<GaugeMetric> powerGauges = new(1);
+    static List<GaugeMetric> gauges = new(1);
 
-    static void Main(string[] _)
+    static void Main()
     {
         try
         {
@@ -54,7 +54,7 @@ public static class Program
 
         Console.WriteLine("Setting up Shelly Plug Connections from Config...");
 
-        foreach (var target in config.targets)
+        foreach (TargetDevice target in config.targets)
         {
             Console.WriteLine("Setting up: " + target.name + " at: " + target.url + " requires auth: " + target.RequiresAuthentication());
             shellyPlugs.Add(new ShellyPlugConnection(target));
@@ -65,25 +65,25 @@ public static class Program
     {
         Console.WriteLine("Setting up metrics");
 
-        foreach (var shelly in shellyPlugs)
+        foreach (ShellyPlugConnection shelly in shellyPlugs)
         {
-            if (!shelly.IsPowerIngored())
+            if (!shelly.IsPowerIgnored())
             {
-                powerGauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_currently_used_power",
+                gauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_currently_used_power",
                                                 "The amount of power currently flowing through the plug in watts",
                                                 shelly.GetCurrentPowerAsString));
             }
 
             if (!shelly.IsTemperatureIgnored())
             {
-                powerGauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_temperature",
+                gauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_temperature",
                                                 "The internal device temperature",
                                                 shelly.GetTemperatureAsString));
             }
 
             if (!shelly.IsRelayStateIgnored())
             {
-                powerGauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_relay_state",
+                gauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_relay_state",
                                                 "The state of the relay",
                                                 shelly.IsRelayOnAsString));
             }
@@ -118,13 +118,13 @@ public static class Program
         Console.WriteLine("Server started");
     }
 
-    static string CollectAllMetrics()
+    static async Task<string> CollectAllMetrics()
     {
         string allMetrics = "";
 
-        foreach (var metric in powerGauges)
+        foreach (GaugeMetric metric in gauges)
         {
-            allMetrics += metric.GetMetric();
+            allMetrics += await metric.GetMetric();
         }
 
         return allMetrics;

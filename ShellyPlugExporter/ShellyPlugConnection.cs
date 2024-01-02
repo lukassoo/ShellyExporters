@@ -1,27 +1,29 @@
 ﻿using System.Text.Json;
-using Utilities.Configs;
+using Utilities.Networking.RequestHandling;
+using Utilities.Networking.RequestHandling.Handlers;
 
 namespace ShellyPlugExporter;
 
 public class ShellyPlugConnection
 {
-    string targetName;
-    string targetUrl;
+    readonly string targetName;
+    readonly string targetUrl;
 
     DateTime lastRequest = DateTime.UtcNow;
         
     // A minimum time between requests of 0.8s - the Shelly Plug updates the reading 1/s, it takes time to request the data and respond to Prometheus, 200ms should be enough
-    TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
+    readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
-    bool ignoreRelayState;
+    readonly bool ignoreRelayState;
+    readonly bool ignoreCurrentPower;
+    readonly bool ignoreTemperature;
+
     bool relayStatus;
-
-    bool ignoreCurrentPower;
     float currentlyUsedPower;
-
-    bool ignoreTemperature;
     float temperature;
 
+    readonly IRequestHandler requestHandler;
+    
     public ShellyPlugConnection(TargetDevice target)
     {
         targetName = target.name;
@@ -31,15 +33,13 @@ public class ShellyPlugConnection
         ignoreTemperature = target.ignoreTemperatureMetric;
         ignoreRelayState = target.ignoreRelayStateMetric;
 
+        HttpRequestHandler httpRequestHandler = new(targetUrl, target.RequiresAuthentication());
+        requestHandler = httpRequestHandler;
+        
         if (target.RequiresAuthentication())
         {
-            Utilities.HttpClient.AddCredentials(targetUrl, target.username, target.password);
+            httpRequestHandler.SetAuth(target.username, target.password);
         }
-    }
-
-    ~ShellyPlugConnection()
-    {
-        Utilities.HttpClient.RemoveCredentials(targetUrl);
     }
 
     public string GetTargetName()
@@ -52,14 +52,14 @@ public class ShellyPlugConnection
         return targetUrl;
     }
 
-    public bool IsPowerIngored()
+    public bool IsPowerIgnored()
     {
         return ignoreCurrentPower;
     }
 
-    public string GetCurrentPowerAsString()
+    public async Task<string> GetCurrentPowerAsString()
     {
-        UpdateMetricsIfNecessary().Wait();
+        await UpdateMetricsIfNecessary();
 
         return currentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
@@ -69,9 +69,9 @@ public class ShellyPlugConnection
         return ignoreRelayState;
     }
 
-    public string IsRelayOnAsString()
+    public async Task<string> IsRelayOnAsString()
     {
-        UpdateMetricsIfNecessary().Wait();
+        await UpdateMetricsIfNecessary();
 
         return relayStatus ? "1" : "0";
     }
@@ -81,11 +81,11 @@ public class ShellyPlugConnection
         return ignoreTemperature;
     }
 
-    public string GetTemperatureAsString()
+    public async Task<string> GetTemperatureAsString()
     {
-        UpdateMetricsIfNecessary().Wait();
+        await UpdateMetricsIfNecessary();
 
-        return temperature.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+        return temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     // Gets the current power flowing through the plug but only when necessary - set through minimumTimeBetweenRequests
@@ -95,25 +95,39 @@ public class ShellyPlugConnection
         {
             return;
         }
-
-        string requestResponse = await Utilities.HttpClient.GetRequestString(targetUrl);
-        JsonDocument json = JsonDocument.Parse(requestResponse);
-
-        if (!ignoreCurrentPower)
-        {
-            currentlyUsedPower = json.RootElement.GetProperty("meters")[0].GetProperty("power").GetSingle();
-        }
-
-        if (!ignoreTemperature)
-        {
-            temperature = json.RootElement.GetProperty("temperature").GetSingle();
-        }
         
-        if (!ignoreRelayState)
+        lastRequest = DateTime.UtcNow;
+
+        string? requestResponse = await requestHandler.Request();
+
+        if (string.IsNullOrEmpty(requestResponse))
         {
-            relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
+            Console.WriteLine("[WRN] Request response null or empty - could not update metrics");
+            return;
         }
+
+        try
+        {
+            JsonDocument json = JsonDocument.Parse(requestResponse);
+
+            if (!ignoreCurrentPower)
+            {
+                currentlyUsedPower = json.RootElement.GetProperty("meters")[0].GetProperty("power").GetSingle();
+            }
+
+            if (!ignoreTemperature)
+            {
+                temperature = json.RootElement.GetProperty("temperature").GetSingle();
+            }
         
-        lastRequest = DateTime.Now;
+            if (!ignoreRelayState)
+            {
+                relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
+            }
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine("Failed to parse response, exception: " + exception.Message);
+        }
     }
 }

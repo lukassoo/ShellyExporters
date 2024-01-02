@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
+using Utilities.Networking.RequestHandling;
+using Utilities.Networking.RequestHandling.Handlers;
 
 namespace Shelly3EMExporter;
 
 public class Shelly3EmConnection
 {
-    TargetDevice targetDevice;
     string targetName;
     string targetUrl;
     
@@ -18,17 +19,21 @@ public class Shelly3EmConnection
 
     MeterReading[] meterReadings;
 
+    readonly IRequestHandler requestHandler;
+    
     public Shelly3EmConnection(TargetDevice targetDevice)
     {
-        this.targetDevice = targetDevice;
         targetName = targetDevice.name;
         targetUrl = targetDevice.url + "/status";
         
         ignoreRelayState = targetDevice.ignoreRelayStateMetric;
         
+        HttpRequestHandler httpRequestHandler = new(targetUrl, targetDevice.RequiresAuthentication());
+        requestHandler = httpRequestHandler;
+        
         if (targetDevice.RequiresAuthentication())
         {
-            Utilities.HttpClient.AddCredentials(targetUrl, targetDevice.username, targetDevice.password);
+            httpRequestHandler.SetAuth(targetDevice.username, targetDevice.password);
         }
 
         int targetMeterCount = targetDevice.targetMeters.Length;
@@ -44,11 +49,6 @@ public class Shelly3EmConnection
                                                 targetMeters[i].ignoreVoltage,
                                                 targetMeters[i].ignorePowerFactor);
         }
-    }
-
-    ~Shelly3EmConnection()
-    {
-        Utilities.HttpClient.RemoveCredentials(targetUrl);
     }
 
     public string GetTargetName()
@@ -68,9 +68,9 @@ public class Shelly3EmConnection
         return ignoreRelayState;
     }
     
-    public string IsRelayOnAsString()
+    public async Task<string> IsRelayOnAsString()
     {
-        UpdateMetricsIfNecessary().Wait();
+        await UpdateMetricsIfNecessary();
 
         return relayStatus ? "1" : "0";
     }
@@ -81,8 +81,17 @@ public class Shelly3EmConnection
         {
             return;
         }
+        
+        lastRequest = DateTime.UtcNow;
 
-        string requestResponse = await Utilities.HttpClient.GetRequestString(targetUrl);
+        string? requestResponse = await requestHandler.Request();
+        
+        if (string.IsNullOrEmpty(requestResponse))
+        {
+            Console.WriteLine("[WRN] Request response null or empty - could not update metrics");
+            return;
+        }
+        
         JsonDocument json = JsonDocument.Parse(requestResponse);
 
         JsonElement metersNode = json.RootElement.GetProperty("emeters");
@@ -116,7 +125,5 @@ public class Shelly3EmConnection
         {
             relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
         }
-        
-        lastRequest = DateTime.UtcNow;
     }
 }

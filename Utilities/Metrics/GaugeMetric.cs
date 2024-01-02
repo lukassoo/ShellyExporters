@@ -5,7 +5,7 @@
 /// </summary>
 public class GaugeMetric : BaseMetric
 {
-    Func<string> metricGetterFunction;
+    Func<Task<string>> metricGetterFunction;
 
     /// <summary>
     /// Constructs a Gauge metric instance
@@ -13,13 +13,15 @@ public class GaugeMetric : BaseMetric
     /// <param name="name">This will be the name under which Prometheus will see this metric</param>
     /// <param name="description">This will be seen as the help/description of the metric</param>
     /// <param name="metricGetterFunction">A function that returns the metric as a string - this will be called every time Prometheus requests/scrapes the metrics</param>
-    public GaugeMetric(string name, string description, Func<string> metricGetterFunction) : base(name, description, MetricType.Gauge)
+    public GaugeMetric(string name, string description, Func<Task<string>> metricGetterFunction) : base(name, description, MetricType.Gauge)
     {
         this.metricGetterFunction = metricGetterFunction;
     }
 
-    protected override string GetMetricString()
+    protected override async Task<string> GetMetricString()
     {
-        return GetName() + " " + metricGetterFunction() + '\n';
+        string metricGetResult = await metricGetterFunction();
+        
+        return GetName() + " " + metricGetResult + '\n';
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Utilities.Configs;
+﻿namespace ShellyPlugExporter;
 
 public class TargetDevice
 {

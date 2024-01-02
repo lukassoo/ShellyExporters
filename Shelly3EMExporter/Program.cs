@@ -1,8 +1,9 @@
 ﻿using System.Globalization;
-using Shelly3EMExporter;
-using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
+using Utilities.Networking;
+
+namespace Shelly3EMExporter;
 
 public static class Program
 {
@@ -12,7 +13,7 @@ public static class Program
     static List<Shelly3EmConnection> deviceConnections = new(1);
     static List<GaugeMetric> gauges = new(1);
 
-    static void Main(string[] _)
+    static void Main()
     {
         try
         {
@@ -39,18 +40,18 @@ public static class Program
         {
             Console.WriteLine("No config found, writing an example one - change it to your settings and start again");
 
-            TargetMeter[] targetMeters = 
-            {
-                new(0),
-                new(1),
-                new(2)
-            };
+            TargetMeter[] targetMeters =
+            [
+                new TargetMeter(0),
+                new TargetMeter(1),
+                new TargetMeter(2)
+            ];
             
             config.targets.Add(new TargetDevice("Your Name for the device - like \"solar_power\" - keep it formatted like that, lowercase with underscores", 
-                                                "Address (usually 192.168.X.X - the IP of your device)", 
-                                                "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
-                                                "Password (leave empty if not used)",
-                                                targetMeters));
+                "Address (usually 192.168.X.X - the IP of your device)", 
+                "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
+                "Password (leave empty if not used)",
+                targetMeters));
             Configuration.WriteConfig(configName, config);
 
             Environment.Exit(0);
@@ -62,7 +63,7 @@ public static class Program
         
         Console.WriteLine("Setting up connections from config");
 
-        foreach (var target in config.targets)
+        foreach (TargetDevice target in config.targets)
         {
             Console.WriteLine("Setting up: " + target.name + " at: " + target.url + " requires auth: " + target.RequiresAuthentication());
             deviceConnections.Add(new Shelly3EmConnection(target));
@@ -83,26 +84,30 @@ public static class Program
             
             MeterReading[] meterReadings = deviceConnection.GetCurrentMeterReadings();
 
-            foreach (var meterReading in meterReadings)
+            foreach (MeterReading meterReading in meterReadings)
             {
                 if (!meterReading.powerIgnored)
                 {
-                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power", "Power (W)", () => meterReading.power.ToString(CultureInfo.InvariantCulture)));
+                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power", 
+                                                   "Power (W)", () => Task.FromResult(meterReading.power.ToString("0.00", CultureInfo.InvariantCulture))));
                 }
 
                 if (!meterReading.currentIgnored)
                 {
-                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_current", "Current (A)", () => meterReading.current.ToString(CultureInfo.InvariantCulture)));
+                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_current", 
+                                                   "Current (A)", () => Task.FromResult(meterReading.current.ToString("0.00", CultureInfo.InvariantCulture))));
                 }
                 
                 if (!meterReading.voltageIgnored)
                 {
-                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_voltage", "Voltage (V)", () => meterReading.voltage.ToString(CultureInfo.InvariantCulture)));
+                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_voltage", 
+                                                   "Voltage (V)", () => Task.FromResult(meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture))));
                 }
                 
                 if (!meterReading.powerFactorIgnored)
                 {
-                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power_factor", "Power Factor", () => meterReading.powerFactor.ToString(CultureInfo.InvariantCulture)));
+                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power_factor", 
+                                                   "Power Factor", () => Task.FromResult(meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture))));
                 }
             }
         }
@@ -136,18 +141,18 @@ public static class Program
         Console.WriteLine("Server started");
     }
     
-    static string CollectAllMetrics()
+    static async Task<string> CollectAllMetrics()
     {
         foreach (Shelly3EmConnection deviceConnection in deviceConnections)
         {
-            deviceConnection.UpdateMetricsIfNecessary().Wait();
+            await deviceConnection.UpdateMetricsIfNecessary();
         }
         
         string allMetrics = "";
 
-        foreach (var metric in gauges)
+        foreach (GaugeMetric metric in gauges)
         {
-            allMetrics += metric.GetMetric();
+            allMetrics += await metric.GetMetric();
         }
 
         return allMetrics;
