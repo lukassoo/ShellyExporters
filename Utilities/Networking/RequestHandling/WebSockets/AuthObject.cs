@@ -1,9 +1,13 @@
-﻿using System.Security.Cryptography;
+﻿using System.Runtime.Serialization;
+using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Utilities.Networking.RequestHandling.Handlers.WebSockets;
+namespace Utilities.Networking.RequestHandling.WebSockets;
 
+/// <summary>
+/// Auth object for authentication as requested https://shelly-api-docs.shelly.cloud/gen2/General/Authentication/#successful-request-with-authentication-details
+/// </summary>
 public class AuthObject
 {
     [JsonProperty] public string? realm;
@@ -24,12 +28,11 @@ public class AuthObject
         ha1 = Sha256HexHashString(username + ":" + realm + ":" + password);
     }
     
-    public string GetJson()
+    [OnSerializing]
+    void UpdateResponse(StreamingContext context)
     {
         cnonce += 1;
         response = Sha256HexHashString(ha1 + ":" + nonce + ":" + nc + ":" + cnonce + ":auth:" + ha2);
-        
-        return JsonConvert.SerializeObject(this);
     }
     
     string Sha256HexHashString(string input)

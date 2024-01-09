@@ -1,17 +1,15 @@
 ﻿using System.Text.Json;
 using Utilities.Networking.RequestHandling;
-using Utilities.Networking.RequestHandling.Handlers;
 
 namespace Shelly3EMExporter;
 
 public class Shelly3EmConnection
 {
     string targetName;
-    string targetUrl;
-    
-    DateTime lastRequest = DateTime.UtcNow;
 
-    // A minimum time between requests of 0.8s - the Shelly updates the reading 1/s, it takes time to request the data and respond to Prometheus, a bit of delay will reduce load
+    DateTime lastRequest = DateTime.MinValue;
+
+    // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, a bit of delay will reduce load
     TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
     
     bool ignoreRelayState;
@@ -19,21 +17,20 @@ public class Shelly3EmConnection
 
     MeterReading[] meterReadings;
 
-    readonly IRequestHandler requestHandler;
+    readonly HttpRequestHandler requestHandler;
     
     public Shelly3EmConnection(TargetDevice targetDevice)
     {
         targetName = targetDevice.name;
-        targetUrl = targetDevice.url + "/status";
+        string targetUrl = targetDevice.url + "/status";
         
         ignoreRelayState = targetDevice.ignoreRelayStateMetric;
         
-        HttpRequestHandler httpRequestHandler = new(targetUrl, targetDevice.RequiresAuthentication());
-        requestHandler = httpRequestHandler;
+        requestHandler = new(targetUrl, targetDevice.RequiresAuthentication());
         
         if (targetDevice.RequiresAuthentication())
         {
-            httpRequestHandler.SetAuth(targetDevice.username, targetDevice.password);
+            requestHandler.SetAuth(targetDevice.username, targetDevice.password);
         }
 
         int targetMeterCount = targetDevice.targetMeters.Length;
@@ -88,42 +85,50 @@ public class Shelly3EmConnection
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[WRN] Request response null or empty - could not update metrics");
-            return;
-        }
-        
-        JsonDocument json = JsonDocument.Parse(requestResponse);
-
-        JsonElement metersNode = json.RootElement.GetProperty("emeters");
-        
-        foreach (MeterReading meterReading in meterReadings)
-        {
-            JsonElement targetMeterNode = metersNode[meterReading.meterIndex];
-
-            if (!meterReading.powerIgnored)
-            {
-                meterReading.power = targetMeterNode.GetProperty("power").GetSingle();
-            }
-
-            if (!meterReading.currentIgnored)
-            {
-                meterReading.current = targetMeterNode.GetProperty("current").GetSingle();
-            }
-
-            if (!meterReading.voltageIgnored)
-            {
-                meterReading.voltage = targetMeterNode.GetProperty("voltage").GetSingle();
-            }
-
-            if (!meterReading.powerFactorIgnored)
-            {
-                meterReading.powerFactor = targetMeterNode.GetProperty("pf").GetSingle();
-            }
+            Console.WriteLine("[ERR Request response null or empty - could not update metrics");
+            throw new Exception("Update metrics request failed");
         }
 
-        if (!ignoreRelayState)
+        try
         {
-            relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
+            JsonDocument json = JsonDocument.Parse(requestResponse);
+
+            JsonElement metersNode = json.RootElement.GetProperty("emeters");
+        
+            foreach (MeterReading meterReading in meterReadings)
+            {
+                JsonElement targetMeterNode = metersNode[meterReading.meterIndex];
+
+                if (!meterReading.powerIgnored)
+                {
+                    meterReading.power = targetMeterNode.GetProperty("power").GetSingle();
+                }
+
+                if (!meterReading.currentIgnored)
+                {
+                    meterReading.current = targetMeterNode.GetProperty("current").GetSingle();
+                }
+
+                if (!meterReading.voltageIgnored)
+                {
+                    meterReading.voltage = targetMeterNode.GetProperty("voltage").GetSingle();
+                }
+
+                if (!meterReading.powerFactorIgnored)
+                {
+                    meterReading.powerFactor = targetMeterNode.GetProperty("pf").GetSingle();
+                }
+            }
+
+            if (!ignoreRelayState)
+            {
+                relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
+            }
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
+            throw;
         }
     }
 }

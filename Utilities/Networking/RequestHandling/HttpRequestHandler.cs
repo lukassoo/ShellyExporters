@@ -1,8 +1,8 @@
 ﻿using System.Net;
 
-namespace Utilities.Networking.RequestHandling.Handlers;
+namespace Utilities.Networking.RequestHandling;
 
-public class HttpRequestHandler : IRequestHandler
+public class HttpRequestHandler
 {
     HttpClient httpClient;
     CredentialCache? credentialCache;

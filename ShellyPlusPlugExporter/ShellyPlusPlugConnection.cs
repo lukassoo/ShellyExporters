@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
-using Utilities.Networking.RequestHandling;
-using Utilities.Networking.RequestHandling.Handlers.WebSockets;
+using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPlusPlugExporter;
 
@@ -9,9 +8,9 @@ public class ShellyPlusPlugConnection
     readonly string targetName;
     readonly string targetUrl;
 
-    DateTime lastRequest = DateTime.UtcNow;
+    DateTime lastRequest = DateTime.MinValue;
         
-    // A minimum time between requests of 0.8s - the Shelly Plug updates the reading 1/s, it takes time to request the data and respond to Prometheus, 200ms should be enough
+    // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, 200ms should be enough
     readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
     readonly bool ignoreCurrentPower;
@@ -26,7 +25,7 @@ public class ShellyPlusPlugConnection
     bool relayStatus;
     float temperature;
 
-    readonly IRequestHandler requestHandler;
+    readonly WebSocketHandler requestHandler;
     
     public ShellyPlusPlugConnection(TargetDevice target)
     {
@@ -38,8 +37,16 @@ public class ShellyPlusPlugConnection
         ignoreCurrent = target.ignoreCurrentMetric;
         ignoreTemperature = target.ignoreTemperatureMetric;
         ignoreRelayState = target.ignoreRelayStateMetric;
-        
-        WebSocketHandler webSocketHandler = new(targetUrl);
+
+        RequestObject requestObject = new("Switch.GetStatus")
+        {
+            MethodParams = new IdParam
+            {
+                Id = 0
+            }
+        };
+
+        WebSocketHandler webSocketHandler = new(targetUrl, requestObject);
         requestHandler = webSocketHandler;
         
         if (target.RequiresAuthentication())
@@ -132,8 +139,8 @@ public class ShellyPlusPlugConnection
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[WRN] Request response null or empty - could not update metrics");
-            return;
+            Console.WriteLine("[ERR] Request response null or empty - could not update metrics");
+            throw new Exception("Update metrics request failed");
         }
 
         try
@@ -168,7 +175,8 @@ public class ShellyPlusPlugConnection
         }
         catch (Exception exception)
         {
-            Console.WriteLine("Failed to parse response, exception: " + exception.Message);
+            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
+            throw;
         }
     }
 }

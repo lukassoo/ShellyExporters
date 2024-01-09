@@ -52,7 +52,6 @@ public static class HttpServer
 
             while (true)
             {
-
                 HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
                 HttpListenerResponse response = httpListenerContext.Response;
 

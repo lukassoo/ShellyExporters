@@ -135,7 +135,7 @@ class Program
     {
         string allMetrics = "";
 
-        foreach (var metric in gauges)
+        foreach (GaugeMetric metric in gauges)
         {
             allMetrics += await metric.GetMetric();
         }

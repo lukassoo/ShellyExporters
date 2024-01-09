@@ -1,11 +1,12 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using Newtonsoft.Json;
 using Uri = System.Uri;
 
-namespace Utilities.Networking.RequestHandling.Handlers.WebSockets;
+namespace Utilities.Networking.RequestHandling.WebSockets;
 
-public class WebSocketHandler : IRequestHandler
+public class WebSocketHandler
 {
     ClientWebSocket webSocket;
     string targetUrl;
@@ -13,15 +14,13 @@ public class WebSocketHandler : IRequestHandler
     CancellationTokenSource cancellationTokenSource = new();
     byte[] responseBuffer = new byte[1024 * 10];
 
-    const string regularStatusRequest = """{ "id": 1, "method": "Switch.GetStatus", "params":{ "id":0 } }""";
-    string authenticatedStatusRequest = regularStatusRequest;
+    readonly RequestObject requestObject;
+    string requestJson = null!;
     
-    bool authenticated;
-
     AuthObject? authObject;
     string? password;
     
-    public WebSocketHandler(string targetUrl)
+    public WebSocketHandler(string targetUrl, RequestObject requestObject)
     {
         if (targetUrl.Contains("https"))
         {
@@ -39,6 +38,9 @@ public class WebSocketHandler : IRequestHandler
         }
 
         this.targetUrl = targetUrl;
+        this.requestObject = requestObject;
+
+        UpdateRequestJson();
         
         webSocket = new ClientWebSocket();
         _ = Connect();
@@ -53,9 +55,9 @@ public class WebSocketHandler : IRequestHandler
     {
         try
         {
-            start:
+            bool isRetrying = false;
             
-            string requestJson = GetRequestJson();
+            start:
             
             bool sendSuccessful = await Send(requestJson);
 
@@ -75,6 +77,12 @@ public class WebSocketHandler : IRequestHandler
 
                 if (jsonDocument.RootElement.TryGetProperty("error", out JsonElement errorElement))
                 {
+                    if (isRetrying)
+                    {
+                        Console.WriteLine("[ERR] Request error after authentication update");
+                        return null;
+                    }
+                    
                     if (!errorElement.TryGetProperty("code", out JsonElement codeElement))
                     {
                         return responseString;
@@ -88,16 +96,14 @@ public class WebSocketHandler : IRequestHandler
                         return responseString;
                     }
                     
-                    Console.WriteLine("[INF] Detected 401 error response, updating authentication");
-                    
                     if (!UpdateAuthentication(responseString))
                     {
+                        Console.WriteLine("[ERR] Failed to update authentication");
                         return null;
                     }
                     
-                    Console.WriteLine("[INF] Authentication updated, retrying request");
-                    
                     // Retry sending the request
+                    isRetrying = true;
                     goto start;
                 }
             }
@@ -110,7 +116,7 @@ public class WebSocketHandler : IRequestHandler
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Exception during web socket request: " + exception.Message);
+            Console.WriteLine("[ERR] Exception during web socket request: \n" + exception.Message);
             return null;
         }
     }
@@ -130,9 +136,9 @@ public class WebSocketHandler : IRequestHandler
             Console.WriteLine("[WRN] Failed to connect to web socket");
             return false;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            Console.WriteLine("[WRN] Failed to connect to web socket");
+            Console.WriteLine("[WRN] Failed to connect to web socket, exception: \n" + exception.Message);
             return false;
         }
     }
@@ -155,9 +161,10 @@ public class WebSocketHandler : IRequestHandler
                 await webSocket.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, cancellationTokenSource.Token);
                 return true;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                Console.WriteLine("[WRN] Request send exception, reconnecting");
+                Console.WriteLine("[WRN] Request send exception: \n" + exception.Message);
+                Console.WriteLine("[INF] Attempting reconnect");
                 
                 bool connected = await Connect();
 
@@ -193,8 +200,8 @@ public class WebSocketHandler : IRequestHandler
                 cnonce = 0,
                 nc = messageJson.RootElement.GetProperty("nc").GetInt32()
             };
-            
-            authenticated = true;
+
+            UpdateRequestJson();
             return true;
         }
         catch (Exception exception)
@@ -204,15 +211,15 @@ public class WebSocketHandler : IRequestHandler
         }
     }
     
-    string GetRequestJson()
+    void UpdateRequestJson()
     {
-        if (!authenticated)
+        if (authObject == null)
         {
-            return regularStatusRequest;
+            requestJson = JsonConvert.SerializeObject(requestObject);
+            return;
         }
         
-        authenticatedStatusRequest = """{ "id": 1, "method": "Switch.GetStatus", "params":{ "id":0 }, "auth": """ + authObject!.GetJson() + "}";
-        
-        return authenticatedStatusRequest;
+        requestObject.AuthObject = authObject;
+        requestJson = JsonConvert.SerializeObject(requestObject);
     }
 }
