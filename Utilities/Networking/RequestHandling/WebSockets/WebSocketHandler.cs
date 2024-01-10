@@ -42,7 +42,6 @@ public class WebSocketHandler
 
         UpdateRequestJson();
         
-        webSocket = new ClientWebSocket();
         _ = Connect();
     }
 
@@ -125,6 +124,7 @@ public class WebSocketHandler
     {
         try
         {
+            webSocket = new ClientWebSocket();
             await webSocket.ConnectAsync(new Uri(targetUrl), cancellationTokenSource.Token);
 
             if (webSocket.State == WebSocketState.Open)
