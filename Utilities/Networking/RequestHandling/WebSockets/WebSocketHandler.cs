@@ -8,7 +8,7 @@ namespace Utilities.Networking.RequestHandling.WebSockets;
 
 public class WebSocketHandler
 {
-    ClientWebSocket webSocket;
+    ClientWebSocket? webSocket;
     string targetUrl;
 
     CancellationTokenSource cancellationTokenSource = new();
@@ -124,6 +124,8 @@ public class WebSocketHandler
     {
         try
         {
+            webSocket?.Dispose();
+            
             webSocket = new ClientWebSocket();
             await webSocket.ConnectAsync(new Uri(targetUrl), cancellationTokenSource.Token);
 
