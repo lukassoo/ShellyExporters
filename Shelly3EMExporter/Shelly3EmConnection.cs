@@ -57,8 +57,6 @@ public class Shelly3EmConnection
     
     public MeterReading[] GetCurrentMeterReadings()
     {
-        UpdateMetricsIfNecessary().Wait();
-
         return meterReadings;
     }
     
@@ -128,7 +126,7 @@ public class Shelly3EmConnection
                 
                 if (!meterReading.totalReturnedIgnored)
                 {
-                    meterReading.totalReturned = targetMeterNode.GetProperty("totalReturned").GetSingle();
+                    meterReading.totalReturned = targetMeterNode.GetProperty("total_returned").GetSingle();
                 }
             }
 
