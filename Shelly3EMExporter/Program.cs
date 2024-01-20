@@ -109,6 +109,18 @@ public static class Program
                     gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power_factor", 
                                                    "Power Factor", () => Task.FromResult(meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture))));
                 }
+                
+                if (!meterReading.totalIgnored)
+                {
+                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_total_energy", 
+                        "Total Energy (Wh)", () => Task.FromResult(meterReading.total.ToString("0.00", CultureInfo.InvariantCulture))));
+                }
+                
+                if (!meterReading.totalReturnedIgnored)
+                {
+                    gauges.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_total_energy_returned", 
+                        "Total Energy returned to the grid (Wh)", () => Task.FromResult(meterReading.totalReturned.ToString("0.00", CultureInfo.InvariantCulture))));
+                }
             }
         }
     }

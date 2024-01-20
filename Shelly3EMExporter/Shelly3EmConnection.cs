@@ -44,7 +44,9 @@ public class Shelly3EmConnection
                                                 targetMeters[i].ignorePower,
                                                 targetMeters[i].ignoreCurrent,
                                                 targetMeters[i].ignoreVoltage,
-                                                targetMeters[i].ignorePowerFactor);
+                                                targetMeters[i].ignorePowerFactor,
+                                                targetMeters[i].ignoreTotal,
+                                                targetMeters[i].ignoreTotalReturned);
         }
     }
 
@@ -117,6 +119,16 @@ public class Shelly3EmConnection
                 if (!meterReading.powerFactorIgnored)
                 {
                     meterReading.powerFactor = targetMeterNode.GetProperty("pf").GetSingle();
+                }
+                
+                if (!meterReading.totalIgnored)
+                {
+                    meterReading.total = targetMeterNode.GetProperty("total").GetSingle();
+                }
+                
+                if (!meterReading.totalReturnedIgnored)
+                {
+                    meterReading.totalReturned = targetMeterNode.GetProperty("totalReturned").GetSingle();
                 }
             }
 
