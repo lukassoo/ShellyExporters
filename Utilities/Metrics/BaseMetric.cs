@@ -27,11 +27,17 @@ public abstract class BaseMetric
     {
         string metric = helpLine + typeLine + await GetMetricString();
 
-        if (!metric.EndsWith(Environment.NewLine))
-        {
-            metric += Environment.NewLine;
-        }
+        if (metric.EndsWith("\n\n")) return metric;
         
+        if (metric.EndsWith('\n'))
+        {
+            metric += '\n';
+        }
+        else
+        {
+            metric += "\n\n";
+        }
+
         return metric;
     }
 
