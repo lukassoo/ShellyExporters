@@ -52,22 +52,28 @@ public static class HttpServer
 
             while (true)
             {
-                HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
-                HttpListenerResponse response = httpListenerContext.Response;
-
+                HttpListenerResponse? response = null;
+                
                 try
                 {
+                    HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
+                    response = httpListenerContext.Response;
+                
                     response.OutputStream.Write(Encoding.UTF8.GetBytes(await responseFunction()));
                     response.StatusCode = (int)HttpStatusCode.OK;
                 }
                 catch (Exception exception)
                 {
                     Console.WriteLine(DateTime.UtcNow + " Exception while processing request: " + exception.Message);
-                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    response.StatusDescription = exception.Message;
+
+                    if (response != null)
+                    {
+                        response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        response.StatusDescription = exception.Message;
+                    }
                 }
 
-                response.Close();
+                response?.Close();
             }
         });
     }

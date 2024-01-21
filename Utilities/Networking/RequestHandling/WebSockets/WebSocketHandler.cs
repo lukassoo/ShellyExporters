@@ -42,7 +42,7 @@ public class WebSocketHandler
 
         UpdateRequestJson();
         
-        _ = Connect();
+        Connect().Wait();
     }
 
     public void SetAuth(string authPassword)
@@ -66,13 +66,13 @@ public class WebSocketHandler
                 return null;
             }
             
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(responseBuffer, cancellationTokenSource.Token);
+            WebSocketReceiveResult result = await webSocket!.ReceiveAsync(responseBuffer, cancellationTokenSource.Token);
 
             string responseString = Encoding.UTF8.GetString(responseBuffer, 0, result.Count);
 
             try
             {
-                JsonDocument? jsonDocument = JsonDocument.Parse(responseString);
+                JsonDocument jsonDocument = JsonDocument.Parse(responseString);
 
                 if (jsonDocument.RootElement.TryGetProperty("error", out JsonElement errorElement))
                 {
@@ -127,6 +127,9 @@ public class WebSocketHandler
             webSocket?.Dispose();
             
             webSocket = new ClientWebSocket();
+            
+            // Set a shorter web socket timeout once it is possible: https://github.com/dotnet/runtime/issues/48729 
+            
             await webSocket.ConnectAsync(new Uri(targetUrl), cancellationTokenSource.Token);
 
             if (webSocket.State == WebSocketState.Open)
@@ -148,6 +151,12 @@ public class WebSocketHandler
     async Task<bool> Send(string message)
     {
         int attempts = 0;
+
+        if (webSocket == null)
+        {
+            Console.WriteLine("[ERR] Can not send on null web socket");
+            return false;
+        }
         
         do
         {
