@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShellyPlugExporter", "Shell
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Utilities\Utilities.csproj", "{86805521-B985-4ACB-9119-EC8EA5B79CB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shelly3EMExporter", "Shelly3EMExporter\Shelly3EMExporter.csproj", "{55710E73-53C4-41AD-870B-8E861950BEF5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shelly3EmExporter", "Shelly3EmExporter\Shelly3EmExporter.csproj", "{55710E73-53C4-41AD-870B-8E861950BEF5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellyPlusPlugExporter", "ShellyPlusPlugExporter\ShellyPlusPlugExporter.csproj", "{F40DD04E-9FD6-41ED-A0D6-3857AAA393C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellyPro3EmExporter", "ShellyPro3EmExporter\ShellyPro3EmExporter.csproj", "{714CCA23-5167-4A9A-B4BA-102E97FB335B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{F40DD04E-9FD6-41ED-A0D6-3857AAA393C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F40DD04E-9FD6-41ED-A0D6-3857AAA393C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F40DD04E-9FD6-41ED-A0D6-3857AAA393C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{714CCA23-5167-4A9A-B4BA-102E97FB335B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{714CCA23-5167-4A9A-B4BA-102E97FB335B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{714CCA23-5167-4A9A-B4BA-102E97FB335B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{714CCA23-5167-4A9A-B4BA-102E97FB335B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
