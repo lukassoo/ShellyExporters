@@ -1,4 +1,4 @@
-﻿namespace Shelly3EMExporter;
+﻿namespace Shelly3EmExporter;
 
 public class TargetDevice
 {
@@ -30,6 +30,6 @@ public class TargetDevice
     
     public bool RequiresAuthentication()
     {
-        return !(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password));
+        return !string.IsNullOrEmpty(username) || !string.IsNullOrEmpty(password);
     }
 }

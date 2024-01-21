@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Utilities.Networking.RequestHandling;
 
-namespace Shelly3EMExporter;
+namespace Shelly3EmExporter;
 
 public class Shelly3EmConnection
 {
@@ -12,31 +12,31 @@ public class Shelly3EmConnection
     // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, a bit of delay will reduce load
     TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
     
-    bool ignoreRelayState;
+    public bool IsRelayStateIgnored { get; }
     bool relayStatus;
 
     MeterReading[] meterReadings;
 
     readonly HttpRequestHandler requestHandler;
     
-    public Shelly3EmConnection(TargetDevice targetDevice)
+    public Shelly3EmConnection(TargetDevice target)
     {
-        targetName = targetDevice.name;
-        string targetUrl = targetDevice.url + "/status";
+        targetName = target.name;
+        string targetUrl = target.url + "/status";
         
-        ignoreRelayState = targetDevice.ignoreRelayStateMetric;
+        IsRelayStateIgnored = target.ignoreRelayStateMetric;
         
-        requestHandler = new(targetUrl, targetDevice.RequiresAuthentication());
+        requestHandler = new HttpRequestHandler(targetUrl, target.RequiresAuthentication());
         
-        if (targetDevice.RequiresAuthentication())
+        if (target.RequiresAuthentication())
         {
-            requestHandler.SetAuth(targetDevice.username, targetDevice.password);
+            requestHandler.SetAuth(target.username, target.password);
         }
 
-        int targetMeterCount = targetDevice.targetMeters.Length;
+        int targetMeterCount = target.targetMeters.Length;
         meterReadings = new MeterReading[targetMeterCount];
 
-        TargetMeter[] targetMeters = targetDevice.targetMeters;
+        TargetMeter[] targetMeters = target.targetMeters;
         
         for (int i = 0; i < targetMeters.Length; i++)
         {
@@ -58,11 +58,6 @@ public class Shelly3EmConnection
     public MeterReading[] GetCurrentMeterReadings()
     {
         return meterReadings;
-    }
-    
-    public bool IsRelayStateIgnored()
-    {
-        return ignoreRelayState;
     }
     
     public async Task<string> IsRelayOnAsString()
@@ -130,7 +125,7 @@ public class Shelly3EmConnection
                 }
             }
 
-            if (!ignoreRelayState)
+            if (!IsRelayStateIgnored)
             {
                 relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
             }

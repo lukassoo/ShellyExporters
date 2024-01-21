@@ -1,4 +1,4 @@
-﻿namespace Shelly3EMExporter;
+﻿namespace Shelly3EmExporter;
 
 public class MeterReading
 {

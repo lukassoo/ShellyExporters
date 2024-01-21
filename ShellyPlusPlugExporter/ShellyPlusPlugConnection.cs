@@ -6,7 +6,6 @@ namespace ShellyPlusPlugExporter;
 public class ShellyPlusPlugConnection
 {
     readonly string targetName;
-    readonly string targetUrl;
 
     DateTime lastRequest = DateTime.MinValue;
         
@@ -30,7 +29,7 @@ public class ShellyPlusPlugConnection
     public ShellyPlusPlugConnection(TargetDevice target)
     {
         targetName = target.name;
-        targetUrl = target.url + "/rpc";
+        string targetUrl = target.url + "/rpc";
 
         ignoreCurrentPower = target.ignorePowerMetric;
         ignoreVoltage = target.ignoreVoltageMetric;
@@ -46,23 +45,17 @@ public class ShellyPlusPlugConnection
             }
         };
 
-        WebSocketHandler webSocketHandler = new(targetUrl, requestObject);
-        requestHandler = webSocketHandler;
+        requestHandler = new WebSocketHandler(targetUrl, requestObject);
         
         if (target.RequiresAuthentication())
         {
-            webSocketHandler.SetAuth(target.password);
+            requestHandler.SetAuth(target.password);
         }
     }
 
     public string GetTargetName()
     {
         return targetName;
-    }
-
-    public string GetTargetUrl()
-    {
-        return targetUrl;
     }
 
     public bool IsPowerIgnored()

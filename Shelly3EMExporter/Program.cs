@@ -3,7 +3,7 @@ using Utilities.Configs;
 using Utilities.Metrics;
 using Utilities.Networking;
 
-namespace Shelly3EMExporter;
+namespace Shelly3EmExporter;
 
 public static class Program
 {
@@ -77,7 +77,7 @@ public static class Program
             string deviceName = deviceConnection.GetTargetName();
             string metricPrefix = "shelly3em_" + deviceName + "_";
             
-            if (!deviceConnection.IsRelayStateIgnored())
+            if (!deviceConnection.IsRelayStateIgnored)
             {
                 gauges.Add(new GaugeMetric(metricPrefix + "relay_state", "Relay State", deviceConnection.IsRelayOnAsString));
             }
