@@ -12,9 +12,9 @@ Visit the wiki for documentation
 
 ## Exporter Requests
 
-If you would like me to write more exporters for more Shelly devices I am happy to do so when I have some spare time.  
+If you would like me to write exporters for more Shelly devices I am happy to do so when I have some spare time. Open a new issue and we can discuss it.  
 You may also create a pull request if you can do it yourself and understand the architecture that I am trying to maintain.
 
 For me to write another exporter I will need:
-- Access to the device for testing - Open a new issue so it can ba arranged
+- Access to the device for testing - Simple port forward access is enough
 - A few weeks of time - I may not have much free time and testing exporters takes a lot of time
