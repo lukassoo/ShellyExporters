@@ -1,10 +1,13 @@
 ﻿using System.Net;
 using System.Text;
+using Serilog;
 
 namespace Utilities.Networking;
 
 public static class HttpServer
 {
+    static ILogger log = Log.ForContext(typeof(HttpServer));
+    
     static HttpListener httpListener;
     static Func<Task<string>>? responseFunction;
 
@@ -30,51 +33,87 @@ public static class HttpServer
         string[] commandLineArgs = Environment.GetCommandLineArgs();
         if (commandLineArgs.Length > 1 && commandLineArgs[1] == "localhost")
         {
-            Console.WriteLine("Using localhost");
+            log.Information("Using localhost");
             targetHost = "localhost";
         }
         
         string prefix = "http://" + targetHost + ":" + port + "/";
 
+        log.Information("Will be listening on: {url}", prefix);
+        
         httpListener.Prefixes.Add(prefix);
         httpListener.Start();
+        
+        log.Information("Listening started");
+        
         StartRequestProcessing();
     }
 
-    static void StartRequestProcessing()
+    static async void StartRequestProcessing()
     {
-        Task.Run(async () =>
+        if (responseFunction == null)
         {
-            if (responseFunction == null)
-            {
-                throw new Exception("No response function set, this would result in an empty response, set one before starting to listen for requests with SetResponseFunction()");
-            }
+            throw new Exception("No response function set, this would result in an empty response, set one before starting to listen for requests with SetResponseFunction()");
+        }
 
-            while (true)
+        while (true)
+        {
+            HttpListenerResponse? response = null;
+            
+            try
             {
-                HttpListenerResponse? response = null;
+                HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
+                response = httpListenerContext.Response;
                 
-                try
+                log.Debug("Starting request handling");
+                
+                log.Debug("Getting response");
+                string responseString = await responseFunction();
+                log.Debug("Response received");
+
+                if (string.IsNullOrEmpty(responseString))
                 {
-                    HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
-                    response = httpListenerContext.Response;
-                
-                    response.OutputStream.Write(Encoding.UTF8.GetBytes(await responseFunction()));
+                    log.Error("Detected empty response - responding with error 500");
+                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                }
+                else
+                {
+                    log.Debug("Writing response");
+                    await response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(responseString));
+                    log.Debug("Response written");
+                    
+                    log.Debug("Setting OK status (200)");
                     response.StatusCode = (int)HttpStatusCode.OK;
                 }
-                catch (Exception exception)
-                {
-                    Console.WriteLine(DateTime.UtcNow + " Exception while processing request: " + exception.Message);
-
-                    if (response != null)
-                    {
-                        response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                        response.StatusDescription = exception.Message;
-                    }
-                }
-
-                response?.Close();
             }
-        });
+            catch (Exception exception)
+            {
+                log.Error(exception, "Exception while handling request");
+
+                if (response != null)
+                {
+                    log.Debug("Setting error status code and description");
+                    
+                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    response.StatusDescription = exception.Message;
+                }
+                else
+                {
+                    log.Debug("Response is null - cannot set error status code and description");
+                }
+            }
+
+            if (response != null)
+            {
+                log.Debug("Closing response");
+                response.Close();
+            }
+            else
+            {
+                log.Debug("No response to close");
+            }
+            
+            log.Debug("Request handling ended");
+        }
     }
 }

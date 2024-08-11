@@ -2,12 +2,15 @@
 using System.Text;
 using System.Text.Json;
 using Newtonsoft.Json;
+using Serilog;
 using Uri = System.Uri;
 
 namespace Utilities.Networking.RequestHandling.WebSockets;
 
 public class WebSocketHandler
 {
+    static ILogger log = Log.ForContext(typeof(WebSocketHandler));
+    
     ClientWebSocket? webSocket;
     string targetUrl;
 
@@ -19,6 +22,8 @@ public class WebSocketHandler
     
     AuthObject? authObject;
     string? password;
+
+    bool isConnecting;
     
     public WebSocketHandler(string targetUrl, RequestObject requestObject)
     {
@@ -62,7 +67,7 @@ public class WebSocketHandler
 
             if (!sendSuccessful)
             {
-                Console.WriteLine("[WRN] Send failed, failing request");
+                log.Warning("Send failed, failing request");
                 return null;
             }
             
@@ -78,7 +83,7 @@ public class WebSocketHandler
                 {
                     if (isRetrying)
                     {
-                        Console.WriteLine("[ERR] Request error after authentication update");
+                        log.Error("Request error after authentication update");
                         return null;
                     }
                     
@@ -97,7 +102,7 @@ public class WebSocketHandler
                     
                     if (!UpdateAuthentication(responseString))
                     {
-                        Console.WriteLine("[ERR] Failed to update authentication");
+                        log.Error("Failed to update authentication");
                         return null;
                     }
                     
@@ -115,7 +120,7 @@ public class WebSocketHandler
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Exception during web socket request: \n" + exception.Message);
+            log.Error(exception, "Exception during web socket request");
             return null;
         }
     }
@@ -124,26 +129,53 @@ public class WebSocketHandler
     {
         try
         {
-            webSocket?.Dispose();
-            
-            webSocket = new ClientWebSocket();
-            
-            // Set a shorter web socket timeout once it is possible: https://github.com/dotnet/runtime/issues/48729 
-            
-            await webSocket.ConnectAsync(new Uri(targetUrl), cancellationTokenSource.Token);
-
-            if (webSocket.State == WebSocketState.Open)
+            if (isConnecting)
             {
-                Console.WriteLine("[INF] Connected to web socket");
+                log.Warning("Already trying to connect - ignoring connect call");
+                return false;
+            }
+            isConnecting = true;
+            
+            log.Information("Trying to connect web socket...");
+
+            webSocket?.Dispose();
+            webSocket = null;
+            
+            ClientWebSocket tempWebSocket = new();
+            
+            // TODO: Set a shorter web socket timeout using the builtin way once it is possible in .NET 9: https://github.com/dotnet/runtime/issues/48729
+
+            CancellationTokenSource tempCancellationSource = new();
+            tempCancellationSource.CancelAfter(TimeSpan.FromSeconds(3));
+            
+            await tempWebSocket.ConnectAsync(new Uri(targetUrl), tempCancellationSource.Token);
+
+            if (tempWebSocket.State == WebSocketState.Open)
+            {
+                log.Information("Connected web socket");
+
+                webSocket = tempWebSocket;
+                isConnecting = false;
                 return true;
             }
 
-            Console.WriteLine("[WRN] Failed to connect to web socket");
+            log.Warning("Failed to connect web socket");
+            tempWebSocket.Dispose();
+            isConnecting = false;
             return false;
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[WRN] Failed to connect to web socket, exception: \n" + exception.Message);
+            if (exception is TaskCanceledException)
+            {
+                log.Error("Web socket connection timeout");
+            }
+            else
+            {
+                log.Error(exception, "Failed to connect to web socket");
+            }
+            
+            isConnecting = false;
             return false;
         }
     }
@@ -154,7 +186,14 @@ public class WebSocketHandler
 
         if (webSocket == null)
         {
-            Console.WriteLine("[ERR] Can not send on null web socket");
+            log.Error("Can not send on null web socket");
+
+            if (!isConnecting)
+            {
+                log.Information("Triggering reconnection attempt");
+                _ = Connect();
+            }
+            
             return false;
         }
         
@@ -162,7 +201,7 @@ public class WebSocketHandler
         {
             if (attempts >= 3)
             {
-                Console.WriteLine("[ERR] Send attempts exhausted, failing send");
+                log.Error("Send attempts exhausted, failing send");
                 return false;
             }
             attempts += 1;
@@ -174,14 +213,14 @@ public class WebSocketHandler
             }
             catch (Exception exception)
             {
-                Console.WriteLine("[WRN] Request send exception: \n" + exception.Message);
-                Console.WriteLine("[INF] Attempting reconnect");
+                log.Warning(exception, "Send exception");
                 
+                log.Information("Attempting reconnect");
                 bool connected = await Connect();
 
                 if (!connected)
                 {
-                    Console.WriteLine("[ERR] Failed to reconnect, failing send");
+                    log.Error("Failed to reconnect, failing send");
                     return false;
                 }
             }
@@ -193,7 +232,7 @@ public class WebSocketHandler
     {
         if (string.IsNullOrEmpty(password))
         {
-            Console.WriteLine("[ERR] Cannot authenticate without password");
+            log.Error("Cannot authenticate without password");
             return false;
         }
         
@@ -217,7 +256,7 @@ public class WebSocketHandler
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Failed to authenticate, exception: " + exception.Message);
+            log.Error(exception, "Failed to authenticate");
             return false;
         }
     }

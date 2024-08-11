@@ -1,10 +1,13 @@
 ﻿using System.Text.Json;
+using Serilog;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro3EmExporter;
 
 public class ShellyPro3EmConnection
 {
+    static ILogger log = Log.ForContext(typeof(ShellyPro3EmConnection));
+    
     string targetName;
 
     DateTime lastRequest = DateTime.MinValue;
@@ -72,7 +75,7 @@ public class ShellyPro3EmConnection
 
         if (target.NeedsTotalEnergyRequests())
         {
-            Console.WriteLine("[INF] Target device wants energy totals - setting up second request");
+            log.Information("Target device wants energy totals - setting up second request");
 
             IsTotalActiveEnergyIgnored = target.ignoreTotalActiveEnergy;
             IsTotalActiveEnergyReturnedIgnored = target.ignoreTotalActiveReturnedEnergy;
@@ -123,11 +126,11 @@ public class ShellyPro3EmConnection
         return meterReadings;
     }
     
-    public async Task UpdateMetricsIfNecessary()
+    public async Task<bool> UpdateMetricsIfNecessary()
     {
         if (DateTime.UtcNow - lastRequest < minimumTimeBetweenRequests)
         {
-            return;
+            return true;
         }
         
         lastRequest = DateTime.UtcNow;
@@ -136,23 +139,26 @@ public class ShellyPro3EmConnection
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[ERR] Request response null or empty - could not update metrics");
-            throw new Exception("Update metrics request failed");
+            log.Error("Request response null or empty - could not update metrics");
+            return false;
         }
 
         UpdateRegularMetrics(requestResponse);
 
-        if (totalEnergyRequestHandler == null) return;
+        if (totalEnergyRequestHandler == null)
+        {
+            return true;
+        }
         
         requestResponse = await totalEnergyRequestHandler.Request();
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[ERR] Request response null or empty - could not update total energy metrics");
-            throw new Exception("Update total energy metrics request failed");
+            log.Error("Request response null or empty - could not update total energy metrics");
+            return false;
         }
 
-        UpdateTotalEnergyMetrics(requestResponse);
+        return UpdateTotalEnergyMetrics(requestResponse);
     }
 
     void UpdateRegularMetrics(string requestResponse)
@@ -211,12 +217,12 @@ public class ShellyPro3EmConnection
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
+            log.Error(exception, "Failed to parse response");
             throw;
         }
     }
     
-    void UpdateTotalEnergyMetrics(string requestResponse)
+    bool UpdateTotalEnergyMetrics(string requestResponse)
     {
         try
         {
@@ -263,11 +269,13 @@ public class ShellyPro3EmConnection
             {
                 TotalActiveEnergyReturnedPhase3 = paramsElement.GetProperty("c_total_act_ret_energy").GetSingle();
             }
+
+            return true;
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
-            throw;
+            log.Error(exception, "Failed to parse response");
+            return false;
         }
     }
 }

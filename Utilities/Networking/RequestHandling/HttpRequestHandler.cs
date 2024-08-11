@@ -1,13 +1,16 @@
 ﻿using System.Net;
+using Serilog;
 
 namespace Utilities.Networking.RequestHandling;
 
 public class HttpRequestHandler
 {
-    HttpClient httpClient;
-    CredentialCache? credentialCache;
+    static ILogger log = Log.ForContext(typeof(HttpRequestHandler));
 
-    string targetUrl;
+    readonly HttpClient httpClient;
+    readonly CredentialCache? credentialCache;
+    
+    readonly string targetUrl;
     
     public HttpRequestHandler(string targetUrl, bool useAuthentication)
     {
@@ -36,7 +39,7 @@ public class HttpRequestHandler
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Exception during http request: " + exception.Message);
+            log.Error(exception, "Exception during http request");
             return null;
         }
     }
