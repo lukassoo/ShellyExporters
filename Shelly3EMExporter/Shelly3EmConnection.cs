@@ -1,21 +1,24 @@
 ﻿using System.Text.Json;
+using Serilog;
 using Utilities.Networking.RequestHandling;
 
 namespace Shelly3EmExporter;
 
 public class Shelly3EmConnection
 {
-    string targetName;
+    static readonly ILogger log = Log.ForContext(typeof(Shelly3EmConnection));
+
+    readonly string targetName;
 
     DateTime lastRequest = DateTime.MinValue;
 
     // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, a bit of delay will reduce load
-    TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
+    readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
     
     public bool IsRelayStateIgnored { get; }
     bool relayStatus;
 
-    MeterReading[] meterReadings;
+    readonly MeterReading[] meterReadings;
 
     readonly HttpRequestHandler requestHandler;
     
@@ -60,18 +63,16 @@ public class Shelly3EmConnection
         return meterReadings;
     }
     
-    public async Task<string> IsRelayOnAsString()
+    public string IsRelayOnAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return relayStatus ? "1" : "0";
     }
     
-    public async Task UpdateMetricsIfNecessary()
+    public async Task<bool> UpdateMetricsIfNecessary()
     {
         if (DateTime.UtcNow - lastRequest < minimumTimeBetweenRequests)
         {
-            return;
+            return true;
         }
         
         lastRequest = DateTime.UtcNow;
@@ -80,8 +81,8 @@ public class Shelly3EmConnection
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[ERR Request response null or empty - could not update metrics");
-            throw new Exception("Update metrics request failed");
+            log.Error("Request response null or empty - could not update metrics");
+            return false;
         }
 
         try
@@ -129,11 +130,13 @@ public class Shelly3EmConnection
             {
                 relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
             }
+
+            return true;
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
-            throw;
+            log.Error(exception, "Failed to parse response");
+            return false;
         }
     }
 }

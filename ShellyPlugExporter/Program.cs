@@ -1,4 +1,6 @@
-﻿using Utilities.Configs;
+﻿using Serilog;
+using Utilities;
+using Utilities.Configs;
 using Utilities.Metrics;
 using Utilities.Networking;
 
@@ -6,93 +8,105 @@ namespace ShellyPlugExporter;
 
 public static class Program
 {
+    static ILogger log = null!;
+    
     const string configName = "shellyPlugExporter";
     const int port = 9918;
 
-    static List<ShellyPlugConnection> shellyPlugs = new(1);
-    static List<GaugeMetric> gauges = new(1);
+    static Dictionary<ShellyPlugConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
 
-    static void Main()
+    static async Task Main()
     {
         try
         {
-            SetupShellyPlugsFromConfig();
+            bool existingConfig = TryGetConfig(out Config<TargetDevice> config);
+            
+            RuntimeAutomation.Init(config);
+            log = Log.ForContext(typeof(Program));
+
+            if (!existingConfig)
+            {
+                RuntimeAutomation.Shutdown("No config found, writing an example one - change it to your settings and start again");
+                await RuntimeAutomation.WaitForShutdown();
+                return;
+            }
+            
+            SetupDevicesFromConfig(config);
             SetupMetrics();
             StartMetricsServer();
-
-            while (true)
-            {
-                Thread.Sleep(10000);
-            }
         }
         catch (Exception exception)
         {
-            Console.WriteLine("Exception in Main(): " + exception.Message);
+            log.Error(exception, "Exception in Main()");
+            RuntimeAutomation.Shutdown("Exception in Main()");
         }
+        
+        await RuntimeAutomation.WaitForShutdown();
     }
-
-    static void SetupShellyPlugsFromConfig()
+    
+    static bool TryGetConfig(out Config<TargetDevice> config)
     {
-        Config<TargetDevice> config = new();
+        config = new Config<TargetDevice>();
 
         if (!Configuration.Exists(configName))
         {
-            Console.WriteLine("No config found, writing an example one - change it to your settings and start again");
-
             config.targets.Add(new TargetDevice("Your Name for the device", 
                                                 "Address (usually 192.168.X.X - the IP of your device)", 
                                                 "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
                                                 "Password (leave empty if not used)"));
+            
             Configuration.WriteConfig(configName, config);
 
-            Environment.Exit(0);
+            return false;
         }
-        else
-        {
-            Configuration.ReadConfig(configName, out config);
-        }
+        
+        Configuration.ReadConfig(configName, out config);
+        return true;
+    }
 
-        Console.WriteLine("Setting up Shelly Plug Connections from Config...");
+    static void SetupDevicesFromConfig(Config<TargetDevice> config)
+    {
+        log.Information("Setting up Shelly Plug Connections from Config...");
 
         foreach (TargetDevice target in config.targets)
         {
-            Console.WriteLine("Setting up: " + target.name + " at: " + target.url + " requires auth: " + target.RequiresAuthentication());
-            shellyPlugs.Add(new ShellyPlugConnection(target));
+            log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
+            deviceConnectionsToMetricsDictionary.Add(new ShellyPlugConnection(target), []);
         }
     }
 
     static void SetupMetrics()
     {
-        Console.WriteLine("Setting up metrics");
+        log.Information("Setting up metrics");
 
-        foreach (ShellyPlugConnection shelly in shellyPlugs)
+        foreach ((ShellyPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
         {
-            if (!shelly.IsPowerIgnored())
+            if (!device.IsPowerIgnored())
             {
-                gauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_currently_used_power",
+                deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_currently_used_power",
                                                 "The amount of power currently flowing through the plug in watts",
-                                                shelly.GetCurrentPowerAsString));
+                                                device.GetCurrentPowerAsString));
             }
 
-            if (!shelly.IsTemperatureIgnored())
+            if (!device.IsTemperatureIgnored())
             {
-                gauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_temperature",
+                deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_temperature",
                                                 "The internal device temperature",
-                                                shelly.GetTemperatureAsString));
+                                                device.GetTemperatureAsString));
             }
 
-            if (!shelly.IsRelayStateIgnored())
+            if (!device.IsRelayStateIgnored())
             {
-                gauges.Add(new GaugeMetric("shellyplug_" + shelly.GetTargetName() + "_relay_state",
+                deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_relay_state",
                                                 "The state of the relay",
-                                                shelly.IsRelayOnAsString));
+                                                device.IsRelayOnAsString));
             }
         }
     }
 
     static void StartMetricsServer()
     {
-        Console.WriteLine("Starting metrics server on port " + port);
+        log.Information("Starting metrics server on port: {port}", port);
 
         HttpServer.SetResponseFunction(CollectAllMetrics);
 
@@ -102,29 +116,37 @@ public static class Program
         }
         catch (Exception exception)
         {
-            Console.WriteLine("");
-            Console.WriteLine("If the exception below is related to access denied or something else with permissions - " +
-                              "you are probably trying to start this on a Windows machine.\n" +
-                              "It won't let you do it without some special permission as this program will try to listen for all requests.\n" +
-                              "This program was designed to run as a Docker container where this problem does not occur\n" +
-                              "If you really want to launch it anyways but only for local testing you can launch with the \"localhost\" argument" + 
-                              "(Make a shortcut to this program, open its properties window and in the \"Target\" section add \"localhost\" after a space at the end)");
-            Console.WriteLine("");
-            Console.WriteLine("The exception: " + exception.Message);
-            Console.Read();
+            log.Information("");
+            log.Information("If the exception below is related to access denied or something else with permissions - " +
+                            "you are probably trying to start this on a Windows machine.\n" +
+                            "It won't let you do it without some special permission as this program will try to listen for all requests.\n" +
+                            "This program was designed to run as a Docker container where this problem does not occur\n" +
+                            "If you really want to launch it anyways but only for local testing you can launch with the \"localhost\" argument" + 
+                            "(Make a shortcut to this program, open its properties window and in the \"Target\" section add \"localhost\" after a space at the end)");
+            log.Information("");
+            log.Information("The exception: " + exception.Message);
             throw;
         }
 
-        Console.WriteLine("Server started");
+        log.Information("Server started");
     }
 
     static async Task<string> CollectAllMetrics()
     {
         string allMetrics = "";
 
-        foreach (GaugeMetric metric in gauges)
+        foreach ((ShellyPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
         {
-            allMetrics += await metric.GetMetric();
+            if (!await device.UpdateMetricsIfNecessary())
+            {
+                log.Error("Failed to update metrics for target device: {targetName}", device.GetTargetName());
+                continue;
+            }
+            
+            foreach (GaugeMetric metric in deviceMetrics)
+            {
+                allMetrics += metric.GetMetric();
+            }
         }
 
         return allMetrics;

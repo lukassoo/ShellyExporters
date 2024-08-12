@@ -1,10 +1,13 @@
 ﻿using System.Text.Json;
+using Serilog;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPlusPlugExporter;
 
 public class ShellyPlusPlugConnection
 {
+    static readonly ILogger log = Log.ForContext(typeof(ShellyPlusPlugConnection));
+    
     readonly string targetName;
 
     DateTime lastRequest = DateTime.MinValue;
@@ -63,10 +66,8 @@ public class ShellyPlusPlugConnection
         return ignoreCurrentPower;
     }
 
-    public async Task<string> GetCurrentPowerAsString()
+    public string GetCurrentPowerAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return currentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
     
@@ -75,10 +76,8 @@ public class ShellyPlusPlugConnection
         return ignoreVoltage;
     }
 
-    public async Task<string> GetVoltageAsString()
+    public string GetVoltageAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return voltage.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
     
@@ -87,10 +86,8 @@ public class ShellyPlusPlugConnection
         return ignoreCurrent;
     }
 
-    public async Task<string> GetCurrentAsString()
+    public string GetCurrentAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return current.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
     }
     
@@ -99,10 +96,8 @@ public class ShellyPlusPlugConnection
         return ignoreRelayState;
     }
 
-    public async Task<string> IsRelayOnAsString()
+    public string IsRelayOnAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return relayStatus ? "1" : "0";
     }
 
@@ -111,19 +106,17 @@ public class ShellyPlusPlugConnection
         return ignoreTemperature;
     }
 
-    public async Task<string> GetTemperatureAsString()
+    public string GetTemperatureAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     // Gets the current power flowing through the plug but only when necessary - set through minimumTimeBetweenRequests
-    async Task UpdateMetricsIfNecessary()
+    public async Task<bool> UpdateMetricsIfNecessary()
     {
         if (DateTime.UtcNow - lastRequest < minimumTimeBetweenRequests)
         {
-            return;
+            return true;
         }
 
         lastRequest = DateTime.UtcNow;
@@ -132,8 +125,8 @@ public class ShellyPlusPlugConnection
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[ERR] Request response null or empty - could not update metrics");
-            throw new Exception("Update metrics request failed");
+            log.Error("Request response null or empty - could not update metrics");
+            return false;
         }
 
         try
@@ -165,11 +158,13 @@ public class ShellyPlusPlugConnection
             {
                 relayStatus = resultElement.GetProperty("output").GetBoolean();
             }
+
+            return true;
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
-            throw;
+            log.Error(exception, "Failed to parse response");
+            return false;
         }
     }
 }

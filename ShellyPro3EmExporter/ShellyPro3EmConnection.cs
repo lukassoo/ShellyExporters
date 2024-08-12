@@ -6,17 +6,17 @@ namespace ShellyPro3EmExporter;
 
 public class ShellyPro3EmConnection
 {
-    static ILogger log = Log.ForContext(typeof(ShellyPro3EmConnection));
-    
-    string targetName;
+    static readonly ILogger log = Log.ForContext(typeof(ShellyPro3EmConnection));
+
+    readonly string targetName;
 
     DateTime lastRequest = DateTime.MinValue;
 
     // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, a bit of delay will reduce load
-    TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
+    readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
-    MeterReading[] meterReadings;
-    static string[] indexToPhaseMap = ["a", "b", "c"];
+    readonly MeterReading[] meterReadings;
+    static readonly string[] indexToPhaseMap = ["a", "b", "c"];
 
     public bool IsTotalActivePowerIgnored { get; }
     public float TotalActivePower { get; private set; }

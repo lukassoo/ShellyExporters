@@ -1,10 +1,13 @@
 ﻿using System.Text.Json;
+using Serilog;
 using Utilities.Networking.RequestHandling;
 
 namespace ShellyPlugExporter;
 
 public class ShellyPlugConnection
 {
+    static readonly ILogger log = Log.ForContext(typeof(ShellyPlugConnection));
+    
     readonly string targetName;
     readonly string targetUrl;
 
@@ -55,10 +58,8 @@ public class ShellyPlugConnection
         return ignoreCurrentPower;
     }
 
-    public async Task<string> GetCurrentPowerAsString()
+    public string GetCurrentPowerAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return currentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
 
@@ -67,10 +68,8 @@ public class ShellyPlugConnection
         return ignoreRelayState;
     }
 
-    public async Task<string> IsRelayOnAsString()
+    public string IsRelayOnAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return relayStatus ? "1" : "0";
     }
 
@@ -79,19 +78,17 @@ public class ShellyPlugConnection
         return ignoreTemperature;
     }
 
-    public async Task<string> GetTemperatureAsString()
+    public string GetTemperatureAsString()
     {
-        await UpdateMetricsIfNecessary();
-
         return temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     // Gets the current power flowing through the plug but only when necessary - set through minimumTimeBetweenRequests
-    async Task UpdateMetricsIfNecessary()
+    public async Task<bool> UpdateMetricsIfNecessary()
     {
         if (DateTime.UtcNow - lastRequest < minimumTimeBetweenRequests)
         {
-            return;
+            return true;
         }
         
         lastRequest = DateTime.UtcNow;
@@ -100,8 +97,8 @@ public class ShellyPlugConnection
 
         if (string.IsNullOrEmpty(requestResponse))
         {
-            Console.WriteLine("[ERR] Request response null or empty - could not update metrics");
-            throw new Exception("Update metrics request failed");
+            log.Error("Request response null or empty - could not update metrics");
+            return false;
         }
 
         try
@@ -122,11 +119,13 @@ public class ShellyPlugConnection
             {
                 relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
             }
+
+            return true;
         }
         catch (Exception exception)
         {
-            Console.WriteLine("[ERR] Failed to parse response, exception: \n" + exception.Message);
-            throw;
+            log.Error(exception, "Failed to parse response");
+            return false;
         }
     }
 }

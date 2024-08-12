@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Serilog;
+using Utilities;
 using Utilities.Configs;
-using Utilities.Logging;
 using Utilities.Metrics;
 using Utilities.Networking;
 
@@ -13,10 +13,8 @@ public static class Program
     
     const string configName = "shellyPro3EmExporter";
     const int port = 10011;
-
-    static readonly TaskCompletionSource shutdownCompletionSource = new();
     
-    static Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceConnectionsMetrics = new(1);
+    static Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
 
     static async Task Main()
     {
@@ -24,35 +22,27 @@ public static class Program
         {
             bool existingConfig = TryGetConfig(out Config<TargetDevice> config);
             
-            LogSystem.Init(config.logToFile, config.logLevel);
+            RuntimeAutomation.Init(config);
             log = Log.ForContext(typeof(Program));
-            
-            log.Information("------------- Start -------------");
             
             if (!existingConfig)
             {
-                log.Information("No config found, writing an example one - change it to your settings and start again");
-                log.Information("------------- Shutdown -------------");
-                await Log.CloseAndFlushAsync();
+                RuntimeAutomation.Shutdown("No config found, writing an example one - change it to your settings and start again");
+                await RuntimeAutomation.WaitForShutdown();
                 return;
             }
-            
+
             SetupDevicesFromConfig(config);
             SetupMetrics();
             StartMetricsServer();
-
-            Console.CancelKeyPress += (_, args) => { args.Cancel = true; shutdownCompletionSource.TrySetResult(); };
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => { shutdownCompletionSource.TrySetResult(); };
-
-            await shutdownCompletionSource.Task;
         }
         catch (Exception exception)
         {
             log.Error(exception, "Exception in Main()");
+            RuntimeAutomation.Shutdown("Exception in Main()");
         }
 
-        log.Information("------------- Shutdown -------------");
-        await Log.CloseAndFlushAsync();
+        await RuntimeAutomation.WaitForShutdown();
     }
 
     static bool TryGetConfig(out Config<TargetDevice> config)
@@ -88,13 +78,13 @@ public static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceConnectionsMetrics.Add(new ShellyPro3EmConnection(target), []);
+            deviceConnectionsToMetricsDictionary.Add(new ShellyPro3EmConnection(target), []);
         }
     }
 
     static void SetupMetrics()
     {
-        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsMetrics)
+        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
         {
             string deviceName = device.GetTargetName();
             string metricPrefix = "shellyPro3Em_" + deviceName + "_";
@@ -106,105 +96,105 @@ public static class Program
                 if (!meterReading.currentIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_current", 
-                                                   "Current (A)", () => Task.FromResult(meterReading.current.ToString("0.000", CultureInfo.InvariantCulture))));
+                                                   "Current (A)", () => meterReading.current.ToString("0.000", CultureInfo.InvariantCulture)));
                 }
                 
                 if (!meterReading.voltageIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_voltage", 
-                                                   "Voltage (V)", () => Task.FromResult(meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture))));
+                                                   "Voltage (V)", () => meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture)));
                 }
                 
                 if (!meterReading.activePowerIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_active_power", 
-                        "Active Power (W)", () => Task.FromResult(meterReading.activePower.ToString("0.00", CultureInfo.InvariantCulture))));
+                        "Active Power (W)", () => meterReading.activePower.ToString("0.00", CultureInfo.InvariantCulture)));
                 }
                 
                 if (!meterReading.apparentPowerIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_apparent_power", 
-                        "Apparent Power (VA)", () => Task.FromResult(meterReading.apparentPower.ToString("0.00", CultureInfo.InvariantCulture))));
+                        "Apparent Power (VA)", () => meterReading.apparentPower.ToString("0.00", CultureInfo.InvariantCulture)));
                 }
                 
                 if (!meterReading.powerFactorIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power_factor", 
-                                                   "Power Factor", () => Task.FromResult(meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture))));
+                                                   "Power Factor", () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture)));
                 }
             }
             
             if (!device.IsTotalCurrentIgnored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "total_current", 
-                    "Total Current (A)", () => Task.FromResult(device.TotalCurrent.ToString("0.000", CultureInfo.InvariantCulture))));
+                    "Total Current (A)", () => device.TotalCurrent.ToString("0.000", CultureInfo.InvariantCulture)));
             }
                             
             if (!device.IsTotalActivePowerIgnored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "total_active_power", 
-                    "Total Active Power (W)", () => Task.FromResult(device.TotalActivePower.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Active Power (W)", () => device.TotalActivePower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
                 
             if (!device.IsTotalApparentPowerIgnored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "total_apparent_power", 
-                    "Total Apparent Power (VA)", () => Task.FromResult(device.TotalApparentPower.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Apparent Power (VA)", () => device.TotalApparentPower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
             if (!device.IsTotalActiveEnergyIgnored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "total_active_energy", 
-                    "Total Active Energy (Wh)", () => Task.FromResult(device.TotalActiveEnergy.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Active Energy (Wh)", () => device.TotalActiveEnergy.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IsTotalActiveEnergyReturnedIgnored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "total_active_energy_returned", 
-                    "Total Active Energy Returned to the grid (Wh)", () => Task.FromResult(device.TotalActiveEnergyReturned.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Active Energy Returned to the grid (Wh)", () => device.TotalActiveEnergyReturned.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
             if (!device.IsTotalActiveEnergyPhase1Ignored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "0_total_active_energy", 
-                    "Total Phase 1 Active Energy (Wh)", () => Task.FromResult(device.TotalActiveEnergyPhase1.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Phase 1 Active Energy (Wh)", () => device.TotalActiveEnergyPhase1.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IsTotalActiveEnergyPhase2Ignored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "1_total_active_energy", 
-                    "Total Phase 2 Active Energy (Wh)", () => Task.FromResult(device.TotalActiveEnergyPhase2.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Phase 2 Active Energy (Wh)", () => device.TotalActiveEnergyPhase2.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IsTotalActiveEnergyPhase3Ignored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "2_total_active_energy", 
-                    "Total Phase 3 Active Energy (Wh)", () => Task.FromResult(device.TotalActiveEnergyPhase3.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Phase 3 Active Energy (Wh)", () => device.TotalActiveEnergyPhase3.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IsTotalActiveEnergyReturnedPhase1Ignored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "0_total_active_energy_returned", 
-                    "Total Phase 1 Active Energy Returned to the grid (Wh)", () => Task.FromResult(device.TotalActiveEnergyReturnedPhase1.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Phase 1 Active Energy Returned to the grid (Wh)", () => device.TotalActiveEnergyReturnedPhase1.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IsTotalActiveEnergyReturnedPhase2Ignored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "1_total_active_energy_returned", 
-                    "Total Phase 2 Active Energy Returned to the grid (Wh)", () => Task.FromResult(device.TotalActiveEnergyReturnedPhase2.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Phase 2 Active Energy Returned to the grid (Wh)", () => device.TotalActiveEnergyReturnedPhase2.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IsTotalActiveEnergyReturnedPhase3Ignored)
             {
                 deviceMetrics.Add(new GaugeMetric(metricPrefix + "2_total_active_energy_returned", 
-                    "Total Phase 3 Active Energy Returned to the grid (Wh)", () => Task.FromResult(device.TotalActiveEnergyReturnedPhase3.ToString("0.00", CultureInfo.InvariantCulture))));
+                    "Total Phase 3 Active Energy Returned to the grid (Wh)", () => device.TotalActiveEnergyReturnedPhase3.ToString("0.00", CultureInfo.InvariantCulture)));
             }
         }
     }
 
     static void StartMetricsServer()
     {
-        log.Information("Starting metrics server on port " + port);
+        log.Information("Starting metrics server on port: {port}", port);
 
         HttpServer.SetResponseFunction(CollectAllMetrics);
 
@@ -233,7 +223,7 @@ public static class Program
     {
         string allMetrics = "";
         
-        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsMetrics)
+        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
         {
             if (!await device.UpdateMetricsIfNecessary())
             {
@@ -243,7 +233,7 @@ public static class Program
             
             foreach (GaugeMetric metric in deviceMetrics)
             {
-                allMetrics += await metric.GetMetric();
+                allMetrics += metric.GetMetric();
             }
         }
         
