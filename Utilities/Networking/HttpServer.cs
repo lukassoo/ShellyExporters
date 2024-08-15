@@ -64,7 +64,6 @@ public static class HttpServer
             {
                 HttpListenerContext httpListenerContext = await httpListener.GetContextAsync();
                 response = httpListenerContext.Response;
-                
                 log.Debug("Starting request handling");
                 
                 log.Debug("Getting response");
@@ -93,9 +92,16 @@ public static class HttpServer
                 if (response != null)
                 {
                     log.Debug("Setting error status code and description");
-                    
-                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    response.StatusDescription = exception.Message;
+
+                    try
+                    {
+                        response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        response.StatusDescription = exception.Message;
+                    }
+                    catch (Exception exception2)
+                    {
+                        log.Error(exception2, "Failed to set status code or description");
+                    }
                 }
                 else
                 {

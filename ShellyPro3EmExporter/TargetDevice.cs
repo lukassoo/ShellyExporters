@@ -5,6 +5,8 @@ public class TargetDevice
     public string name;
     public string url;
     public string password;
+    public float requestTimeoutTime = 3;
+    
     public TargetMeter[] targetMeters;
     
     public bool ignoreTotalCurrent;

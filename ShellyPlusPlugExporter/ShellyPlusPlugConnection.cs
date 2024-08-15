@@ -47,8 +47,10 @@ public class ShellyPlusPlugConnection
                 Id = 0
             }
         };
-
-        requestHandler = new WebSocketHandler(targetUrl, requestObject);
+        
+        TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
+        
+        requestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
         
         if (target.RequiresAuthentication())
         {

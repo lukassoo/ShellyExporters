@@ -5,6 +5,9 @@ public class TargetDevice
     public string name;
     public string url;
     public string password;
+    
+    public float requestTimeoutTime = 3;
+    
     public bool ignorePowerMetric;
     public bool ignoreVoltageMetric;
     public bool ignoreCurrentMetric;

@@ -14,25 +14,43 @@ public static class Program
     const string configName = "shellyPro3EmExporter";
     const int port = 10011;
     
-    static Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
+    static readonly Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
 
     static async Task Main()
     {
         try
         {
-            bool existingConfig = TryGetConfig(out Config<TargetDevice> config);
-            
-            RuntimeAutomation.Init(config);
-            log = Log.ForContext(typeof(Program));
-            
-            if (!existingConfig)
+            if (!Configuration.Exists(configName))
             {
-                RuntimeAutomation.Shutdown("No config found, writing an example one - change it to your settings and start again");
-                await RuntimeAutomation.WaitForShutdown();
+                if (!WriteExampleConfig())
+                {
+                    Console.WriteLine("[ERROR] No existing config file and failed to write example config file");
+                    return;
+                }
+                
+                Console.WriteLine("[ERROR] No existing config file found - written a new example one, update it to point to your device and restart");
                 return;
             }
 
-            SetupDevicesFromConfig(config);
+            if (!Configuration.TryReadConfig(configName, out Config<TargetDevice>? config))
+            {
+                Console.WriteLine("[ERROR] Failed to read config file, fix it or delete it to generate a new one");
+                return;
+            }
+
+            try
+            {
+                Configuration.WriteConfig(configName, config!);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("[WARNING] Failed to save current config - new configuration options will not be added automatically");
+            }
+            
+            RuntimeAutomation.Init(config!);
+            log = Log.ForContext(typeof(Program));
+
+            SetupDevicesFromConfig(config!);
             SetupMetrics();
             StartMetricsServer();
         }
@@ -45,30 +63,31 @@ public static class Program
         await RuntimeAutomation.WaitForShutdown();
     }
 
-    static bool TryGetConfig(out Config<TargetDevice> config)
+    static bool WriteExampleConfig()
     {
-        config = new Config<TargetDevice>();
-
-        if (!Configuration.Exists(configName))
+        try
         {
+            Config<TargetDevice> config = new();
+            
             TargetMeter[] targetMeters =
             [
                 new TargetMeter(0),
                 new TargetMeter(1),
                 new TargetMeter(2)
             ];
-            
+                
             config.targets.Add(new TargetDevice("Your Name for the device - like \"solar_power\" - keep it formatted like that, lowercase with underscores", 
                 "Address (usually 192.168.X.X - the IP of your device)",
                 "Password (leave empty if not used)",
                 targetMeters));
+            
             Configuration.WriteConfig(configName, config);
-
+            return true;
+        }
+        catch (Exception)
+        {
             return false;
         }
-        
-        Configuration.ReadConfig(configName, out config);
-        return true;
     }
 
     static void SetupDevicesFromConfig(Config<TargetDevice> config)

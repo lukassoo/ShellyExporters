@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Globalization;
+using System.Text.Json;
 using Serilog;
 using Utilities.Networking.RequestHandling.WebSockets;
 
@@ -10,7 +12,8 @@ public class ShellyPro3EmConnection
 
     readonly string targetName;
 
-    DateTime lastRequest = DateTime.MinValue;
+    DateTime lastSuccessfulRequest = DateTime.MinValue;
+    readonly Stopwatch requestStopWatch = new();
 
     // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, a bit of delay will reduce load
     readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
@@ -71,7 +74,9 @@ public class ShellyPro3EmConnection
             }
         };
 
-        requestHandler = new WebSocketHandler(targetUrl, requestObject);
+        TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
+        
+        requestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
 
         if (target.NeedsTotalEnergyRequests())
         {
@@ -96,7 +101,7 @@ public class ShellyPro3EmConnection
                 }
             };
             
-            totalEnergyRequestHandler = new WebSocketHandler(targetUrl, totalEnergyRequestObject);
+            totalEnergyRequestHandler = new WebSocketHandler(targetUrl, totalEnergyRequestObject, requestTimeoutTime);
         }
         
         if (target.RequiresAuthentication())
@@ -128,37 +133,69 @@ public class ShellyPro3EmConnection
     
     public async Task<bool> UpdateMetricsIfNecessary()
     {
-        if (DateTime.UtcNow - lastRequest < minimumTimeBetweenRequests)
+        if (DateTime.UtcNow - lastSuccessfulRequest < minimumTimeBetweenRequests)
         {
             return true;
         }
         
-        lastRequest = DateTime.UtcNow;
-
+        log.Debug("Updating metrics");
+        
+        log.Debug("Starting regular metrics request");
+        
+        requestStopWatch.Start();
         string? requestResponse = await requestHandler.Request();
+        requestStopWatch.Stop();
+
+        log.Debug("Regular metrics request ended");
+        
+        TimeSpan requestTime = requestStopWatch.Elapsed;
+        requestStopWatch.Reset();
+        
+        log.Debug("Regular metrics request took: {requestTime} ms", requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
         
         if (string.IsNullOrEmpty(requestResponse))
         {
             log.Error("Request response null or empty - could not update metrics");
             return false;
         }
-
+        
         UpdateRegularMetrics(requestResponse);
 
         if (totalEnergyRequestHandler == null)
         {
+            log.Debug("Updating metrics completed");
+            lastSuccessfulRequest = DateTime.UtcNow;
             return true;
         }
         
+        log.Debug("Starting total energy metrics request");
+        
+        requestStopWatch.Start();
         requestResponse = await totalEnergyRequestHandler.Request();
+        requestStopWatch.Stop();
+
+        log.Debug("Total energy metrics request ended");
+        
+        requestTime = requestStopWatch.Elapsed;
+        requestStopWatch.Reset();
+        
+        log.Debug("Total energy metrics request took: {requestTime} ms", requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
         
         if (string.IsNullOrEmpty(requestResponse))
         {
-            log.Error("Request response null or empty - could not update total energy metrics");
+            log.Error("Total energy request response null or empty - could not update total energy metrics");
             return false;
         }
 
-        return UpdateTotalEnergyMetrics(requestResponse);
+        if (!UpdateTotalEnergyMetrics(requestResponse))
+        {
+            log.Error("Failed to update total energy metrics");
+            return false;
+        }
+        
+        log.Debug("Updating metrics completed");
+        lastSuccessfulRequest = DateTime.UtcNow;
+        return true;
     }
 
     void UpdateRegularMetrics(string requestResponse)

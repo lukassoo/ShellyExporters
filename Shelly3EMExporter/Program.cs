@@ -27,7 +27,7 @@ public static class Program
 
             if (!existingConfig)
             {
-                RuntimeAutomation.Shutdown("No config found, writing an example one - change it to your settings and start again");
+                RuntimeAutomation.Shutdown("No existing config found, writing an example one - change it to your settings and start again");
                 await RuntimeAutomation.WaitForShutdown();
                 return;
             }
@@ -69,7 +69,7 @@ public static class Program
             return false;
         }
         
-        Configuration.ReadConfig(configName, out config);
+        Configuration.TryReadConfig(configName, out config);
         return true;
     }
 

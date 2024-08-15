@@ -29,7 +29,7 @@ public static class Configuration
     {
         if (configRef == null)
         {
-            throw new ArgumentNullException("configRef");
+            throw new ArgumentNullException(nameof(configRef));
         }
 
         if (string.IsNullOrEmpty(configName))
@@ -40,16 +40,27 @@ public static class Configuration
         File.WriteAllText(GetConfigFinalPath(configName), serializer.Serialize(configRef));
     }
 
-    public static void ReadConfig<T>(string configName, out T outConfig)
+    public static bool TryReadConfig<T>(string configName, out T? outConfig)
     {
         if (string.IsNullOrEmpty(configName))
         {
-            throw new ArgumentException("configName can not be empty");
+            outConfig = default;
+            return false;
         }
 
-        string serializedString = File.ReadAllText(GetConfigFinalPath(configName));
+        try
+        {
+            string serializedString = File.ReadAllText(GetConfigFinalPath(configName));
 
-        outConfig = deserializer.Deserialize<T>(serializedString);
+            outConfig = deserializer.Deserialize<T>(serializedString);
+            return true;
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine("[ERROR] Exception while reading config:\n" + exception.Message);
+            outConfig = default;
+            return false;
+        }
     }
 
     static string GetConfigFinalPath(string configName)

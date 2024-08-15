@@ -17,6 +17,7 @@ public class WebSocketHandler
     CancellationTokenSource cancellationTokenSource = new();
     byte[] responseBuffer = new byte[1024 * 10];
 
+    readonly TimeSpan requestTimeoutTime;
     readonly RequestObject requestObject;
     string requestJson = null!;
     
@@ -25,7 +26,7 @@ public class WebSocketHandler
 
     bool isConnecting;
     
-    public WebSocketHandler(string targetUrl, RequestObject requestObject)
+    public WebSocketHandler(string targetUrl, RequestObject requestObject, TimeSpan requestTimeoutTime)
     {
         if (targetUrl.Contains("https"))
         {
@@ -44,6 +45,7 @@ public class WebSocketHandler
 
         this.targetUrl = targetUrl;
         this.requestObject = requestObject;
+        this.requestTimeoutTime = requestTimeoutTime;
 
         UpdateRequestJson();
         
@@ -70,8 +72,23 @@ public class WebSocketHandler
                 log.Warning("Send failed, failing request");
                 return null;
             }
+
+            CancellationTokenSource tempCancellationSource = new();
+            tempCancellationSource.CancelAfter(requestTimeoutTime);
+
+            WebSocketReceiveResult result;
             
-            WebSocketReceiveResult result = await webSocket!.ReceiveAsync(responseBuffer, cancellationTokenSource.Token);
+            try
+            {
+                log.Verbose("Receiving");
+                result = await webSocket!.ReceiveAsync(responseBuffer, tempCancellationSource.Token);
+                log.Verbose("Receiving completed");
+            }
+            catch (TaskCanceledException)
+            {
+                log.Warning("Request receive timeout");
+                return null;
+            }
 
             string responseString = Encoding.UTF8.GetString(responseBuffer, 0, result.Count);
 
@@ -83,13 +100,16 @@ public class WebSocketHandler
                 {
                     if (isRetrying)
                     {
-                        log.Error("Request error after authentication update");
+                        log.Error("Response contains error right after authentication update - something went wrong, response:\n{response}", responseString);
                         return null;
                     }
                     
+                    log.Information("Response contains \"error\" property");
+                    
                     if (!errorElement.TryGetProperty("code", out JsonElement codeElement))
                     {
-                        return responseString;
+                        log.Error("Response error does not contain \"code\" property - unknown error, response:\n{response}", responseString);
+                        return null;
                     }
 
                     int errorCode = codeElement.GetInt32();
@@ -97,14 +117,19 @@ public class WebSocketHandler
                     // Only 401 is handled here
                     if (errorCode != 401)
                     {
-                        return responseString;
+                        log.Error("Unhandled error code: \"{errorCode}\" in response:\n{response}", errorCode, responseString);
+                        return null;
                     }
+                    
+                    log.Information("Updating authentication");
                     
                     if (!UpdateAuthentication(responseString))
                     {
                         log.Error("Failed to update authentication");
                         return null;
                     }
+                    
+                    log.Information("Authentication updated, retrying request");
                     
                     // Retry sending the request
                     isRetrying = true;
@@ -208,8 +233,22 @@ public class WebSocketHandler
             
             try
             {
-                await webSocket.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, cancellationTokenSource.Token);
-                return true;
+                try
+                {
+                    CancellationTokenSource tempCancellationSource = new();
+                    tempCancellationSource.CancelAfter(requestTimeoutTime);
+                    
+                    log.Verbose("Sending");
+                    await webSocket.SendAsync(Encoding.UTF8.GetBytes(message), WebSocketMessageType.Text, true, cancellationTokenSource.Token);
+                    log.Verbose("Sending completed");
+                    
+                    return true;
+                }
+                catch (TaskCanceledException)
+                {
+                    log.Warning("Send timeout");
+                    return false;
+                }
             }
             catch (Exception exception)
             {
@@ -238,6 +277,8 @@ public class WebSocketHandler
         
         try
         {
+            log.Debug("Updating authentication form response:\n{response}", response);
+            
             JsonDocument json = JsonDocument.Parse(response);
             JsonElement errorElement = json.RootElement.GetProperty("error");
             JsonDocument messageJson = JsonDocument.Parse(errorElement.GetProperty("message").GetString()!);
@@ -252,11 +293,13 @@ public class WebSocketHandler
             };
 
             UpdateRequestJson();
+            
+            log.Debug("Updated serialized request:\n{request}", requestJson);
             return true;
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to authenticate");
+            log.Error(exception, "Failed to update authentication");
             return false;
         }
     }
