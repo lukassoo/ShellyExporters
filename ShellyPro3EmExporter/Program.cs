@@ -53,6 +53,7 @@ public static class Program
             SetupDevicesFromConfig(config!);
             SetupMetrics();
             StartMetricsServer();
+            GarbageCollectionProcess();
         }
         catch (Exception exception)
         {
@@ -257,5 +258,16 @@ public static class Program
         }
         
         return allMetrics;
+    }
+
+    static async void GarbageCollectionProcess()
+    {
+        while (!RuntimeAutomation.ShuttingDown)
+        {
+            await Task.Delay(90_000);
+            
+            log.Debug("Triggering garbage collection");
+            GC.Collect();
+        }
     }
 }

@@ -10,7 +10,7 @@ public static class RuntimeAutomation
     
     static readonly TaskCompletionSource shutdownCompletionSource = new();
 
-    static bool shuttingDown;
+    public static bool ShuttingDown { get; private set; }
     
     public static void Init<T>(Config<T> config)
     {
@@ -30,8 +30,8 @@ public static class RuntimeAutomation
 
     public static void Shutdown(string? reason = null)
     {
-        if (shuttingDown) return;
-        shuttingDown = true;
+        if (ShuttingDown) return;
+        ShuttingDown = true;
         
         log.Information("------------- Shutdown -------------");
         
