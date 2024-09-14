@@ -18,3 +18,17 @@ You may also create a pull request if you can do it yourself and understand the 
 For me to write another exporter I will need:
 - Access to the device for testing - Simple port forward access is enough
 - A few weeks of time - I may not have much free time and testing exporters takes a lot of time
+
+## Example Dashboard Showcase
+
+Shelly Plug
+![Shelly Plug](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPlugDashboard.png)
+
+Shelly Plus Plug
+![Shelly Plus Plug](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPlusPlugDashboard.png)
+
+Shelly 3 EM
+![Shelly 3 EM](https://raw.githubusercontent.com/wiki/lukassoo/ShellyExporters/images/shelly3EmDashboard.png)
+
+Shelly Pro 3 EM
+![Shelly Pro 3 EM](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPro3EmDashboard.png)
