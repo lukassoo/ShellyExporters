@@ -78,25 +78,25 @@ public static class Program
 
         foreach ((ShellyPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            if (!device.IsPowerIgnored())
+            if (!device.IgnoreCurrentPower)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_currently_used_power",
                                                 "The amount of power currently flowing through the plug in watts",
-                                                device.GetCurrentPowerAsString));
+                                                () => device.CurrentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)));
             }
 
-            if (!device.IsTemperatureIgnored())
+            if (!device.IgnoreTemperature)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_temperature",
                                                 "The internal device temperature",
-                                                device.GetTemperatureAsString));
+                                                () => device.Temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)));
             }
 
-            if (!device.IsRelayStateIgnored())
+            if (!device.IgnoreRelayState)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_relay_state",
                                                 "The state of the relay",
-                                                device.IsRelayOnAsString));
+                                                () => device.RelayStatus ? "1" : "0"));
             }
         }
     }

@@ -16,14 +16,15 @@ public class ShellyPlugConnection
     // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, 200ms should be enough
     readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
-    readonly bool ignoreRelayState;
-    readonly bool ignoreCurrentPower;
-    readonly bool ignoreTemperature;
+    public bool IgnoreRelayState { get; }
+    public bool RelayStatus { get; private set; }
 
-    bool relayStatus;
-    float currentlyUsedPower;
-    float temperature;
+    public bool IgnoreCurrentPower { get; }
+    public float CurrentlyUsedPower { get; private set; }
 
+    public bool IgnoreTemperature { get; }
+    public float Temperature { get; private set; }
+    
     readonly HttpRequestHandler requestHandler;
     
     public ShellyPlugConnection(TargetDevice target)
@@ -31,9 +32,9 @@ public class ShellyPlugConnection
         targetName = target.name;
         targetUrl = target.url + "/status";
 
-        ignoreCurrentPower = target.ignorePowerMetric;
-        ignoreTemperature = target.ignoreTemperatureMetric;
-        ignoreRelayState = target.ignoreRelayStateMetric;
+        IgnoreCurrentPower = target.ignorePowerMetric;
+        IgnoreTemperature = target.ignoreTemperatureMetric;
+        IgnoreRelayState = target.ignoreRelayStateMetric;
 
         requestHandler = new HttpRequestHandler(targetUrl, target.RequiresAuthentication());
         
@@ -46,41 +47,6 @@ public class ShellyPlugConnection
     public string GetTargetName()
     {
         return targetName;
-    }
-
-    public string GetTargetUrl()
-    {
-        return targetUrl;
-    }
-
-    public bool IsPowerIgnored()
-    {
-        return ignoreCurrentPower;
-    }
-
-    public string GetCurrentPowerAsString()
-    {
-        return currentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-    }
-
-    public bool IsRelayStateIgnored()
-    {
-        return ignoreRelayState;
-    }
-
-    public string IsRelayOnAsString()
-    {
-        return relayStatus ? "1" : "0";
-    }
-
-    public bool IsTemperatureIgnored()
-    {
-        return ignoreTemperature;
-    }
-
-    public string GetTemperatureAsString()
-    {
-        return temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     // Gets the current power flowing through the plug but only when necessary - set through minimumTimeBetweenRequests
@@ -105,19 +71,19 @@ public class ShellyPlugConnection
         {
             JsonDocument json = JsonDocument.Parse(requestResponse);
 
-            if (!ignoreCurrentPower)
+            if (!IgnoreCurrentPower)
             {
-                currentlyUsedPower = json.RootElement.GetProperty("meters")[0].GetProperty("power").GetSingle();
+                CurrentlyUsedPower = json.RootElement.GetProperty("meters")[0].GetProperty("power").GetSingle();
             }
 
-            if (!ignoreTemperature)
+            if (!IgnoreTemperature)
             {
-                temperature = json.RootElement.GetProperty("temperature").GetSingle();
+                Temperature = json.RootElement.GetProperty("temperature").GetSingle();
             }
         
-            if (!ignoreRelayState)
+            if (!IgnoreRelayState)
             {
-                relayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
+                RelayStatus = json.RootElement.GetProperty("relays")[0].GetProperty("ison").GetBoolean();
             }
 
             return true;
