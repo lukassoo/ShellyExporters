@@ -80,7 +80,7 @@ internal static class Program
         {
             if (!device.IgnoreTotalPower)
             {
-                deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_currently_used_power", 
+                deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_total_power", 
                                                 "The total power/energy consumed through the plug in Watt-hours",
                                                 () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
