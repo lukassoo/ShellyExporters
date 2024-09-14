@@ -14,43 +14,22 @@ public static class Program
     const string configName = "shellyPro3EmExporter";
     const int port = 10011;
     
-    static readonly Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
+    static readonly Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
         try
         {
-            if (!Configuration.Exists(configName))
+            if (!ConfigHelper.LoadAndUpdateConfig(configName, WriteExampleConfig, out Config<TargetDevice>? config))
             {
-                if (!WriteExampleConfig())
-                {
-                    Console.WriteLine("[ERROR] No existing config file and failed to write example config file");
-                    return;
-                }
-                
-                Console.WriteLine("[ERROR] No existing config file found - written a new example one, update it to point to your device and restart");
+                Console.WriteLine("[ERROR] Could not load config - returning");
                 return;
-            }
-
-            if (!Configuration.TryReadConfig(configName, out Config<TargetDevice>? config))
-            {
-                Console.WriteLine("[ERROR] Failed to read config file, fix it or delete it to generate a new one");
-                return;
-            }
-
-            try
-            {
-                Configuration.WriteConfig(configName, config!);
-            }
-            catch (Exception)
-            {
-                Console.WriteLine("[WARNING] Failed to save current config - new configuration options will not be added automatically");
             }
             
-            RuntimeAutomation.Init(config!);
+            RuntimeAutomation.Init(config);
             log = Log.ForContext(typeof(Program));
 
-            SetupDevicesFromConfig(config!);
+            SetupDevicesFromConfig(config);
             SetupMetrics();
             StartMetricsServer();
             GarbageCollectionProcess();
@@ -98,13 +77,13 @@ public static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceConnectionsToMetricsDictionary.Add(new ShellyPro3EmConnection(target), []);
+            deviceToMetricsDictionary.Add(new ShellyPro3EmConnection(target), []);
         }
     }
 
     static void SetupMetrics()
     {
-        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
+        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             string deviceName = device.GetTargetName();
             string metricPrefix = "shellyPro3Em_" + deviceName + "_";
@@ -243,7 +222,7 @@ public static class Program
     {
         string allMetrics = "";
         
-        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
+        foreach ((ShellyPro3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             if (!await device.UpdateMetricsIfNecessary())
             {

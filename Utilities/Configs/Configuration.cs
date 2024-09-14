@@ -1,4 +1,5 @@
-﻿using YamlDotNet.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using YamlDotNet.Serialization;
 
 namespace Utilities.Configs;
 
@@ -40,7 +41,7 @@ public static class Configuration
         File.WriteAllText(GetConfigFinalPath(configName), serializer.Serialize(configRef));
     }
 
-    public static bool TryReadConfig<T>(string configName, out T? outConfig)
+    public static bool TryReadConfig<T>(string configName, [MaybeNullWhen(false)] out T outConfig)
     {
         if (string.IsNullOrEmpty(configName))
         {

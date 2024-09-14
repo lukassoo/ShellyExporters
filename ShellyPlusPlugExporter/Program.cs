@@ -13,23 +13,20 @@ class Program
     const string configName = "shellyPlusPlugExporter";
     const int port = 10009;
     
-    static Dictionary<ShellyPlusPlugConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
+    static readonly Dictionary<ShellyPlusPlugConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
     
     static async Task Main()
     {
         try
         {
-            bool existingConfig = TryGetConfig(out Config<TargetDevice> config);
+            if (!ConfigHelper.LoadAndUpdateConfig(configName, WriteExampleConfig, out Config<TargetDevice>? config))
+            {
+                Console.WriteLine("[ERROR] Could not load config - returning");
+                return;
+            }
             
             RuntimeAutomation.Init(config);
             log = Log.ForContext(typeof(Program));
-            
-            if (!existingConfig)
-            {
-                RuntimeAutomation.Shutdown("No existing config found, writing an example one - change it to your settings and start again");
-                await RuntimeAutomation.WaitForShutdown();
-                return;
-            }
             
             SetupDevicesFromConfig(config);
             SetupMetrics();
@@ -44,23 +41,23 @@ class Program
         await RuntimeAutomation.WaitForShutdown();
     }
     
-    static bool TryGetConfig(out Config<TargetDevice> config)
+    static bool WriteExampleConfig()
     {
-        config = new Config<TargetDevice>();
-
-        if (!Configuration.Exists(configName))
+        try
         {
+            Config<TargetDevice> config = new();
+            
             config.targets.Add(new TargetDevice("Your Name for the device",
-                                                "Address (usually 192.168.X.X - the IP of your device)",
-                                                "Password (leave empty if not used)"));
+                "Address (usually 192.168.X.X - the IP of your device)",
+                "Password (leave empty if not used)"));
             
             Configuration.WriteConfig(configName, config);
-
+            return true;
+        }
+        catch (Exception)
+        {
             return false;
         }
-        
-        Configuration.TryReadConfig(configName, out config);
-        return true;
     }
     
     static void SetupDevicesFromConfig(Config<TargetDevice> config)
@@ -70,7 +67,7 @@ class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceConnectionsToMetricsDictionary.Add(new ShellyPlusPlugConnection(target), []);
+            deviceToMetricsDictionary.Add(new ShellyPlusPlugConnection(target), []);
         }
     }
 
@@ -78,7 +75,7 @@ class Program
     {
         log.Information("Setting up metrics");
 
-        foreach ((ShellyPlusPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
+        foreach ((ShellyPlusPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             if (!device.IsPowerIgnored())
             {
@@ -148,7 +145,7 @@ class Program
     {
         string allMetrics = "";
 
-        foreach ((ShellyPlusPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
+        foreach ((ShellyPlusPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             if (!await device.UpdateMetricsIfNecessary())
             {

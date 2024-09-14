@@ -14,23 +14,20 @@ public static class Program
     const string configName = "shelly3EMExporter";
     const int port = 9946;
     
-    static Dictionary<Shelly3EmConnection, List<GaugeMetric>> deviceConnectionsToMetricsDictionary = new(1);
+    static readonly Dictionary<Shelly3EmConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
         try
         {
-            bool existingConfig = TryGetConfig(out Config<TargetDevice> config);
+            if (!ConfigHelper.LoadAndUpdateConfig(configName, WriteExampleConfig, out Config<TargetDevice>? config))
+            {
+                Console.WriteLine("[ERROR] Could not load config - returning");
+                return;
+            }
             
             RuntimeAutomation.Init(config);
             log = Log.ForContext(typeof(Program));
-
-            if (!existingConfig)
-            {
-                RuntimeAutomation.Shutdown("No existing config found, writing an example one - change it to your settings and start again");
-                await RuntimeAutomation.WaitForShutdown();
-                return;
-            }
             
             SetupDevicesFromConfig(config);
             SetupMetrics();
@@ -44,13 +41,13 @@ public static class Program
         
         await RuntimeAutomation.WaitForShutdown();
     }
-    
-    static bool TryGetConfig(out Config<TargetDevice> config)
-    {
-        config = new Config<TargetDevice>();
 
-        if (!Configuration.Exists(configName))
+    static bool WriteExampleConfig()
+    {
+        try
         {
+            Config<TargetDevice> config = new();
+            
             TargetMeter[] targetMeters =
             [
                 new TargetMeter(0),
@@ -59,20 +56,20 @@ public static class Program
             ];
             
             config.targets.Add(new TargetDevice("Your Name for the device - like \"solar_power\" - keep it formatted like that, lowercase with underscores", 
-                                                "Address (usually 192.168.X.X - the IP of your device)", 
-                                                "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
-                                                "Password (leave empty if not used)", 
-                                                targetMeters));
+                "Address (usually 192.168.X.X - the IP of your device)", 
+                "Username (leave empty if not used but you should secure your device from unauthorized access in some way)", 
+                "Password (leave empty if not used)", 
+                targetMeters));
             
             Configuration.WriteConfig(configName, config);
-
+            return true;
+        }
+        catch (Exception)
+        {
             return false;
         }
-        
-        Configuration.TryReadConfig(configName, out config);
-        return true;
     }
-
+    
     static void SetupDevicesFromConfig(Config<TargetDevice> config)
     {
         log.Information("Setting up Shelly 3EM Connections from config");
@@ -80,13 +77,13 @@ public static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceConnectionsToMetricsDictionary.Add(new Shelly3EmConnection(target), []);
+            deviceToMetricsDictionary.Add(new Shelly3EmConnection(target), []);
         }
     }
 
     static void SetupMetrics()
     {
-        foreach ((Shelly3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
+        foreach ((Shelly3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             string deviceName = device.GetTargetName();
             string metricPrefix = "shelly3em_" + deviceName + "_";
@@ -170,7 +167,7 @@ public static class Program
     {
         string allMetrics = "";
         
-        foreach ((Shelly3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceConnectionsToMetricsDictionary)
+        foreach ((Shelly3EmConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             if (!await device.UpdateMetricsIfNecessary())
             {
