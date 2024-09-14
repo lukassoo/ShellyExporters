@@ -15,17 +15,23 @@ public class ShellyPlusPlugConnection
     // A minimum time between requests of 0.8s - the device updates the reading 1/s, it takes time to request the data and respond to Prometheus, 200ms should be enough
     readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
-    readonly bool ignoreCurrentPower;
-    readonly bool ignoreVoltage;
-    readonly bool ignoreCurrent;
-    readonly bool ignoreRelayState;
-    readonly bool ignoreTemperature;
+    public bool IgnoreTotalPower { get; }
+    public float TotalPower { get; private set; }
 
-    float currentlyUsedPower;
-    float voltage;
-    float current;
-    bool relayStatus;
-    float temperature;
+    public bool IgnoreCurrentPower { get; }
+    public float CurrentlyUsedPower { get; private set; }
+
+    public bool IgnoreVoltage { get; }
+    public float Voltage { get; private set; }
+
+    public bool IgnoreCurrent { get; }
+    public float Current { get; private set; }
+
+    public bool IgnoreRelayState { get; }
+    public bool RelayStatus { get; private set; }
+
+    public bool IgnoreTemperature { get; }
+    public float Temperature { get; private set; }
 
     readonly WebSocketHandler requestHandler;
     
@@ -34,11 +40,12 @@ public class ShellyPlusPlugConnection
         targetName = target.name;
         string targetUrl = target.url + "/rpc";
 
-        ignoreCurrentPower = target.ignorePowerMetric;
-        ignoreVoltage = target.ignoreVoltageMetric;
-        ignoreCurrent = target.ignoreCurrentMetric;
-        ignoreTemperature = target.ignoreTemperatureMetric;
-        ignoreRelayState = target.ignoreRelayStateMetric;
+        IgnoreTotalPower = target.ignoreTotalPowerMetric;
+        IgnoreCurrentPower = target.ignorePowerMetric;
+        IgnoreVoltage = target.ignoreVoltageMetric;
+        IgnoreCurrent = target.ignoreCurrentMetric;
+        IgnoreTemperature = target.ignoreTemperatureMetric;
+        IgnoreRelayState = target.ignoreRelayStateMetric;
 
         RequestObject requestObject = new("Switch.GetStatus")
         {
@@ -62,58 +69,7 @@ public class ShellyPlusPlugConnection
     {
         return targetName;
     }
-
-    public bool IsPowerIgnored()
-    {
-        return ignoreCurrentPower;
-    }
-
-    public string GetCurrentPowerAsString()
-    {
-        return currentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-    }
     
-    public bool IsVoltageIgnored()
-    {
-        return ignoreVoltage;
-    }
-
-    public string GetVoltageAsString()
-    {
-        return voltage.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-    }
-    
-    public bool IsCurrentIgnored()
-    {
-        return ignoreCurrent;
-    }
-
-    public string GetCurrentAsString()
-    {
-        return current.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
-    }
-    
-    public bool IsRelayStateIgnored()
-    {
-        return ignoreRelayState;
-    }
-
-    public string IsRelayOnAsString()
-    {
-        return relayStatus ? "1" : "0";
-    }
-
-    public bool IsTemperatureIgnored()
-    {
-        return ignoreTemperature;
-    }
-
-    public string GetTemperatureAsString()
-    {
-        return temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-    }
-
-    // Gets the current power flowing through the plug but only when necessary - set through minimumTimeBetweenRequests
     public async Task<bool> UpdateMetricsIfNecessary()
     {
         if (DateTime.UtcNow - lastRequest < minimumTimeBetweenRequests)
@@ -135,30 +91,35 @@ public class ShellyPlusPlugConnection
         {
             JsonDocument json = JsonDocument.Parse(requestResponse);
             JsonElement resultElement = json.RootElement.GetProperty("result");
-        
-            if (!ignoreCurrentPower)
+
+            if (!IgnoreTotalPower)
             {
-                currentlyUsedPower = resultElement.GetProperty("apower").GetSingle();
+                TotalPower = resultElement.GetProperty("aenergy").GetProperty("total").GetSingle();
+            }
+            
+            if (!IgnoreCurrentPower)
+            {
+                CurrentlyUsedPower = resultElement.GetProperty("apower").GetSingle();
             }
 
-            if (!ignoreVoltage)
+            if (!IgnoreVoltage)
             {
-                voltage = resultElement.GetProperty("voltage").GetSingle();
+                Voltage = resultElement.GetProperty("voltage").GetSingle();
             }
         
-            if (!ignoreVoltage)
+            if (!IgnoreVoltage)
             {
-                current = resultElement.GetProperty("current").GetSingle();
+                Current = resultElement.GetProperty("current").GetSingle();
             }
         
-            if (!ignoreTemperature)
+            if (!IgnoreTemperature)
             {
-                temperature = resultElement.GetProperty("temperature").GetProperty("tC").GetSingle();
+                Temperature = resultElement.GetProperty("temperature").GetProperty("tC").GetSingle();
             }
         
-            if (!ignoreRelayState)
+            if (!IgnoreRelayState)
             {
-                relayStatus = resultElement.GetProperty("output").GetBoolean();
+                RelayStatus = resultElement.GetProperty("output").GetBoolean();
             }
 
             return true;

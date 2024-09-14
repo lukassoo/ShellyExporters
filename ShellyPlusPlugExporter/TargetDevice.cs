@@ -8,6 +8,7 @@ public class TargetDevice
     
     public float requestTimeoutTime = 3;
     
+    public bool ignoreTotalPowerMetric;
     public bool ignorePowerMetric;
     public bool ignoreVoltageMetric;
     public bool ignoreCurrentMetric;

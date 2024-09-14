@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using System.Globalization;
+using Serilog;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
@@ -77,39 +78,46 @@ class Program
 
         foreach ((ShellyPlusPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            if (!device.IsPowerIgnored())
+            if (!device.IgnoreTotalPower)
             {
-                deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_currently_used_power",
+                deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_currently_used_power", 
+                                                "The total power/energy consumed through the plug in Watt-hours",
+                                                () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture)));
+            }
+            
+            if (!device.IgnoreCurrentPower)
+            {
+                deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_currently_used_power", 
                                                 "The amount of power currently flowing through the plug in watts",
-                                                device.GetCurrentPowerAsString));
+                                                () => device.CurrentlyUsedPower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
-            if (!device.IsVoltageIgnored())
+            if (!device.IgnoreVoltage)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_voltage",
                                                 "The current voltage at the plug in volts",
-                                                device.GetVoltageAsString));
+                                                () => device.Voltage.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
-            if (!device.IsCurrentIgnored())
+            if (!device.IgnoreCurrent)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_current",
                                                 "The current flowing through the plug in amperes",
-                                                device.GetCurrentAsString));
+                                                () => device.Current.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
-            if (!device.IsTemperatureIgnored())
+            if (!device.IgnoreTemperature)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_temperature",
                                                 "The internal device temperature in Celsius",
-                                                device.GetTemperatureAsString));
+                                                () => device.Temperature.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
-            if (!device.IsRelayStateIgnored())
+            if (!device.IgnoreRelayState)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplusplug_" + device.GetTargetName() + "_relay_state",
                                                 "The state of the relay",
-                                                device.IsRelayOnAsString));
+                                                () => device.RelayStatus ? "1" : "0"));
             }
         }
     }
