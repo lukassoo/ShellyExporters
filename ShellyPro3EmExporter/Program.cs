@@ -7,7 +7,7 @@ using Utilities.Networking;
 
 namespace ShellyPro3EmExporter;
 
-public static class Program
+internal static class Program
 {
     static ILogger log = null!;
     

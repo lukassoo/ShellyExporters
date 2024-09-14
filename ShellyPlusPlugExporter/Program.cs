@@ -7,7 +7,7 @@ using Utilities.Networking;
 
 namespace ShellyPlusPlugExporter;
 
-class Program
+internal static class Program
 {
     static ILogger log = null!;
     
