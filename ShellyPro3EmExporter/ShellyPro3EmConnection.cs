@@ -158,8 +158,12 @@ public class ShellyPro3EmConnection
             log.Error("Request response null or empty - could not update metrics");
             return false;
         }
-        
-        UpdateRegularMetrics(requestResponse);
+
+        if (!UpdateRegularMetrics(requestResponse))
+        {
+            log.Error("Failed to update regular metrics");
+            return false;
+        }
 
         if (totalEnergyRequestHandler == null)
         {
@@ -198,7 +202,7 @@ public class ShellyPro3EmConnection
         return true;
     }
 
-    void UpdateRegularMetrics(string requestResponse)
+    bool UpdateRegularMetrics(string requestResponse)
     {
         try
         {
@@ -250,12 +254,13 @@ public class ShellyPro3EmConnection
             {
                 TotalApparentPower = paramsElement.GetProperty("total_aprt_power").GetSingle();
             }
-            
+
+            return true;
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to parse response");
-            throw;
+            log.Error(exception, "Failed to parse regular metrics response");
+            return false;
         }
     }
     
@@ -311,7 +316,7 @@ public class ShellyPro3EmConnection
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to parse response");
+            log.Error(exception, "Failed to parse total metrics response");
             return false;
         }
     }
