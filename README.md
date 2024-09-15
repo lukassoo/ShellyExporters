@@ -19,7 +19,7 @@ For me to write another exporter I will need:
 - Access to the device for testing - Simple port forward access is enough
 - A few weeks of time - I may not have much free time and testing exporters takes a lot of time
 
-## Example Dashboard Showcase
+## Example Grafana Dashboard Showcase
 
 Shelly Plug
 ![Shelly Plug](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPlugDashboard.png)
