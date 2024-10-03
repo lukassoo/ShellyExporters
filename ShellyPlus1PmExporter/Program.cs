@@ -91,13 +91,6 @@ internal static class Program
                                                 () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
-            if (!device.IgnoreTotalPowerReturned)
-            {
-                deviceMetrics.Add(new GaugeMetric("shellyplus1pm_" + device.GetTargetName() + "_total_power_returned", 
-                    "The total power/energy returned in Watt-hours",
-                    () => device.TotalPowerReturned.ToString("0.00", CultureInfo.InvariantCulture)));
-            }
-            
             if (!device.IgnoreCurrentPower)
             {
                 deviceMetrics.Add(new GaugeMetric("shellyplus1pm_" + device.GetTargetName() + "_currently_used_power", 
@@ -124,20 +117,6 @@ internal static class Program
                 deviceMetrics.Add(new GaugeMetric("shellyplus1pm_" + device.GetTargetName() + "_temperature",
                                                 "The internal device temperature in Celsius",
                                                 () => device.Temperature.ToString("0.00", CultureInfo.InvariantCulture)));
-            }
-
-            if (!device.IgnorePowerFactor)
-            {
-                deviceMetrics.Add(new GaugeMetric("shellyplus1pm_" + device.GetTargetName() + "_power_factor",
-                                                "The current power factor",
-                                                () => device.PowerFactor.ToString("0.00", CultureInfo.InvariantCulture)));
-            }
-
-            if (!device.IgnoreFrequency)
-            {
-                deviceMetrics.Add(new GaugeMetric("shellyplus1pm_" + device.GetTargetName() + "_frequency",
-                                                "The current network frequency",
-                                                () => device.Frequency.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
             if (!device.IgnoreOutputState)

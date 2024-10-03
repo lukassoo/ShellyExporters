@@ -17,9 +17,6 @@ public class ShellyPlus1PmConnection
 
     public bool IgnoreTotalPower { get; }
     public float TotalPower { get; private set; }
-
-    public bool IgnoreTotalPowerReturned { get; }
-    public float TotalPowerReturned { get; private set; }
     
     public bool IgnoreCurrentPower { get; }
     public float CurrentlyUsedPower { get; private set; }
@@ -29,12 +26,6 @@ public class ShellyPlus1PmConnection
 
     public bool IgnoreCurrent { get; }
     public float Current { get; private set; }
-
-    public bool IgnorePowerFactor { get; }
-    public float PowerFactor { get; private set; }
-    
-    public bool IgnoreFrequency { get; }
-    public float Frequency { get; private set; }
     
     public bool IgnoreOutputState { get; }
     public bool OutputState { get; private set; }
@@ -63,9 +54,6 @@ public class ShellyPlus1PmConnection
         string targetUrl = target.url + "/rpc";
 
         IgnoreTotalPower = target.ignoreTotalPowerMetric;
-        IgnoreTotalPowerReturned = target.ignoreTotalPowerReturnedMetric;
-        IgnorePowerFactor = target.ignorePowerFactor;
-        IgnoreFrequency = target.ignoreFrequency;
         IgnoreCurrentPower = target.ignorePowerMetric;
         IgnoreVoltage = target.ignoreVoltageMetric;
         IgnoreCurrent = target.ignoreCurrentMetric;
@@ -169,12 +157,7 @@ public class ShellyPlus1PmConnection
             {
                 TotalPower = resultElement.GetProperty("aenergy").GetProperty("total").GetSingle();
             }
-            
-            if (!IgnoreTotalPowerReturned)
-            {
-                TotalPowerReturned = resultElement.GetProperty("ret_aenergy").GetProperty("total").GetSingle();
-            }
-            
+
             if (!IgnoreCurrentPower)
             {
                 CurrentlyUsedPower = resultElement.GetProperty("apower").GetSingle();
@@ -189,17 +172,7 @@ public class ShellyPlus1PmConnection
             {
                 Current = resultElement.GetProperty("current").GetSingle();
             }
-
-            if (!IgnorePowerFactor)
-            {
-                PowerFactor = resultElement.GetProperty("pf").GetSingle();
-            }
-
-            if (!IgnoreFrequency)
-            {
-                Frequency = resultElement.GetProperty("freq").GetSingle();
-            }
-        
+            
             if (!IgnoreTemperature)
             {
                 Temperature = resultElement.GetProperty("temperature").GetProperty("tC").GetSingle();
@@ -214,7 +187,7 @@ public class ShellyPlus1PmConnection
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to parse switch metrics response");
+            log.Error(exception, "Failed to parse switch metrics response, response:\n{response}", requestResponse);
             return false;
         }
     }
