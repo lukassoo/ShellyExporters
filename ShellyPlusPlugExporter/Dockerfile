@@ -3,7 +3,7 @@
 COPY bin/Release/net8.0/publish/ App/
 WORKDIR /App
 
-ENV DOTNET_EnableDiagnostics = 0
+ENV DOTNET_EnableDiagnostics=0
 EXPOSE 10009/tcp
 VOLUME /Config
 
