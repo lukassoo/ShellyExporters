@@ -12,7 +12,8 @@ internal static class Program
     static ILogger log = null!;
     
     const string configName = "shellyPro3EmExporter";
-    const int port = 10011;
+    const int defaultPort = 10011;
+    static int listenPort = defaultPort;
     
     static readonly Dictionary<ShellyPro3EmConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
 
@@ -29,6 +30,8 @@ internal static class Program
             RuntimeAutomation.Init(config);
             log = Log.ForContext(typeof(Program));
 
+            listenPort = config.listenPort;
+            
             SetupDevicesFromConfig(config);
             SetupMetrics();
             StartMetricsServer();
@@ -46,13 +49,16 @@ internal static class Program
     {
         try
         {
-            Config<TargetDevice> config = new();
-            
+            Config<TargetDevice> config = new()
+            {
+                listenPort = defaultPort
+            };
+
             TargetMeter[] targetMeters =
             [
-                new TargetMeter(0),
-                new TargetMeter(1),
-                new TargetMeter(2)
+                new(0),
+                new(1),
+                new(2)
             ];
                 
             config.targets.Add(new TargetDevice("Your Name for the device - like \"solar_power\" - keep it formatted like that, lowercase with underscores", 
@@ -192,13 +198,13 @@ internal static class Program
 
     static void StartMetricsServer()
     {
-        log.Information("Starting metrics server on port: {port}", port);
+        log.Information("Starting metrics server on port: {port}", listenPort);
 
         HttpServer.SetResponseFunction(CollectAllMetrics);
 
         try
         {
-            HttpServer.ListenOnPort(port);
+            HttpServer.ListenOnPort(listenPort);
         }
         catch (Exception exception)
         {

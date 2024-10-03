@@ -12,7 +12,8 @@ internal static class Program
     static ILogger log = null!;
     
     const string configName = "shellyPlus1PmExporter";
-    const int port = 10022;
+    const int defaultPort = 10022;
+    static int listenPort = defaultPort;
     
     static readonly Dictionary<ShellyPlus1PmConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
     
@@ -28,6 +29,8 @@ internal static class Program
             
             RuntimeAutomation.Init(config);
             log = Log.ForContext(typeof(Program));
+
+            listenPort = config.listenPort;
             
             SetupDevicesFromConfig(config);
             SetupMetrics();
@@ -46,7 +49,10 @@ internal static class Program
     {
         try
         {
-            Config<TargetDevice> config = new();
+            Config<TargetDevice> config = new()
+            {
+                listenPort = defaultPort
+            };
 
             config.targets.Add(new TargetDevice("Your Name for the device",
                 "Address (usually 192.168.X.X - the IP of your device)",
@@ -173,13 +179,13 @@ internal static class Program
 
     static void StartMetricsServer()
     {
-        log.Information("Starting metrics server on port: {port}", port);
+        log.Information("Starting metrics server on port: {port}", defaultPort);
 
         HttpServer.SetResponseFunction(CollectAllMetrics);
 
         try
         {
-            HttpServer.ListenOnPort(port);
+            HttpServer.ListenOnPort(listenPort);
         }
         catch (Exception exception)
         {
