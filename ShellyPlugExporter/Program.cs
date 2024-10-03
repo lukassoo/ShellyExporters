@@ -20,7 +20,7 @@ internal static class Program
     {
         try
         {
-            if (!ConfigHelper.LoadAndUpdateConfig(configName, WriteExampleConfig, out Config<TargetDevice>? config))
+            if (!ConfigHelper.LoadAndUpdateConfig(configName, defaultPort, WriteExampleConfig, out Config<TargetDevice>? config))
             {
                 Console.WriteLine("[ERROR] Could not load config - returning");
                 return;

@@ -4,7 +4,7 @@ namespace Utilities.Configs;
 
 public static class ConfigHelper
 {
-    public static bool LoadAndUpdateConfig<T>(string configName, Func<bool> writeExampleConfigAction, [MaybeNullWhen(false)] out Config<T> config)
+    public static bool LoadAndUpdateConfig<T>(string configName, int defaultPort, Func<bool> writeExampleConfigAction, [MaybeNullWhen(false)] out Config<T> config)
     {
         config = null;
         
@@ -28,6 +28,11 @@ public static class ConfigHelper
 
         try
         {
+            if (config.listenPort == -1)
+            {
+                config.listenPort = defaultPort;
+            }
+            
             Configuration.WriteConfig(configName, config);
         }
         catch (Exception)
