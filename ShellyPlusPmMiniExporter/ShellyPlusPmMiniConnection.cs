@@ -39,13 +39,13 @@ public class ShellyPlusPmMiniConnection
     public bool IgnoreInputFrequency { get; }
     public float InputFrequency { get; private set; }
     
-    readonly WebSocketHandler switchRequestHandler;
+    readonly WebSocketHandler pm1RequestHandler;
     readonly WebSocketHandler? inputRequestHandler;
     
     public ShellyPlusPmMiniConnection(TargetDevice target)
     {
         targetName = target.name;
-        string targetUrl = target.url + "/rpc";
+        string targetUrl = target.url + (target.url.EndsWith("/") ? "" : "/") + "rpc";
 
         IgnoreTotalPower = target.ignoreTotalPowerMetric;
         IgnoreCurrentPower = target.ignorePowerMetric;
@@ -62,7 +62,7 @@ public class ShellyPlusPmMiniConnection
         
         TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
         
-        switchRequestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
+        pm1RequestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
 
 
         if (target.NeedsInputStatusRequests())
@@ -85,7 +85,7 @@ public class ShellyPlusPmMiniConnection
         
         if (target.RequiresAuthentication())
         {
-            switchRequestHandler.SetAuth(target.password);
+            pm1RequestHandler.SetAuth(target.password);
             inputRequestHandler?.SetAuth(target.password);
         }
     }
@@ -104,7 +104,7 @@ public class ShellyPlusPmMiniConnection
 
         lastRequest = DateTime.UtcNow;
         
-        string? requestResponse = await switchRequestHandler.Request();
+        string? requestResponse = await pm1RequestHandler.Request();
         
         if (string.IsNullOrEmpty(requestResponse))
         {
@@ -114,7 +114,7 @@ public class ShellyPlusPmMiniConnection
 
         if (!UpdatePM1Metrics(requestResponse))
         {
-            log.Error("Failed to update switch metrics");
+            log.Error("Failed to update PM metrics");
             return false;
         }
 
@@ -165,11 +165,13 @@ public class ShellyPlusPmMiniConnection
                 Current = resultElement.GetProperty("current").GetSingle();
             }
 
+            // errors status ignored
+
             return true;
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to parse switch metrics response, response:\n{response}", requestResponse);
+            log.Error(exception, "Failed to parse PM metrics response, response:\n{response}", requestResponse);
             return false;
         }
     }
