@@ -45,7 +45,7 @@ public class ShellyPlusPmMiniConnection
     public ShellyPlusPmMiniConnection(TargetDevice target)
     {
         targetName = target.name;
-        string targetUrl = target.url + (target.url.EndsWith("/") ? "" : "/") + "rpc";
+        string targetUrl = target.url + (target.url.EndsWith('/') ? "" : "/") + "rpc";
 
         IgnoreTotalPower = target.ignoreTotalPowerMetric;
         IgnoreCurrentPower = target.ignorePowerMetric;
@@ -112,7 +112,7 @@ public class ShellyPlusPmMiniConnection
             return false;
         }
 
-        if (!UpdatePM1Metrics(requestResponse))
+        if (!UpdatePm1Metrics(requestResponse))
         {
             log.Error("Failed to update PM metrics");
             return false;
@@ -138,7 +138,7 @@ public class ShellyPlusPmMiniConnection
         return true;
     }
 
-    bool UpdatePM1Metrics(string requestResponse)
+    bool UpdatePm1Metrics(string requestResponse)
     {
         try
         {
