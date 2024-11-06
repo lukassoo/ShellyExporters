@@ -69,7 +69,7 @@ public class WebSocketHandler
 
             if (!sendSuccessful)
             {
-                log.Warning("Send failed, failing request");
+                log.Warning("Send failed, failing request" + requestJson);
                 return null;
             }
 
@@ -197,7 +197,7 @@ public class WebSocketHandler
             }
             else
             {
-                log.Error(exception, "Failed to connect to web socket");
+                log.Error(exception, "Failed to connect to web socket at " + targetUrl);
             }
             
             isConnecting = false;
