@@ -12,7 +12,7 @@ internal static class Program
     static ILogger log = null!;
     
     const string configName = "ShellyPlusPmMiniExporter";
-    const int defaultPort = 10023;
+    const int defaultPort = 10024;
     static int listenPort = defaultPort;
     
     static readonly Dictionary<ShellyPlusPmMiniConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
