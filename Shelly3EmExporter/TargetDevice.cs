@@ -6,7 +6,7 @@ public class TargetDevice
     public string url;
     public string username;
     public string password;
-    public TargetMeter[] targetMeters;
+    public TargetMeter[] targetMeters = null!;
     
     public bool ignoreRelayStateMetric;
     
