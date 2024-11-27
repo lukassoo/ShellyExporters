@@ -77,12 +77,12 @@ public static class HttpServer
                 }
                 else
                 {
+                    log.Debug("Setting content type");
+                    response.ContentType = "text/plain";
+                    
                     log.Debug("Writing response");
                     await response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(responseString));
                     log.Debug("Response written");
-                    
-                    log.Debug("Setting content type");
-                    response.ContentType = "text/plain";
                     
                     log.Debug("Setting OK status (200)");
                     response.StatusCode = (int)HttpStatusCode.OK;
