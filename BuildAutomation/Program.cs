@@ -16,7 +16,7 @@ internal static class Program
     static ILogger log = null!;
 
     static List<string> tagNames = ["armv7", "armv8", "latest"];
-    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyPlusPmMiniExporter"];
+    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyPlusPmMiniExporter", "Shelly3EmExporter"];
     
     // static List<string> tagNames = ["development"];
     // static List<string> projectNames = ["ShellyPlus1PmExporter"];
@@ -30,7 +30,8 @@ internal static class Program
         {"ShellyPlus1PmExporter", "lukassoo/shelly-plus-1pm-exporter"},
         {"ShellyPlusPlugExporter", "lukassoo/shelly-plus-plug-exporter"},
         {"ShellyPro3EmExporter", "lukassoo/shelly-pro-3em-exporter"},
-        {"ShellyPlusPmMiniExporter", "lukassoo/shelly-plus-pm-mini-exporter"}
+        {"ShellyPlusPmMiniExporter", "lukassoo/shelly-plus-pm-mini-exporter"},
+        {"ShellyEmExporter", "lukassoo/shelly-em-exporter"}
     };
     
     static Dictionary<string, string> baseImagePostfixes = new()
