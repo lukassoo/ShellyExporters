@@ -16,7 +16,7 @@ internal static class Program
     static ILogger log = null!;
 
     static List<string> tagNames = ["armv7", "armv8", "latest"];
-    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyPlusPmMiniExporter", "Shelly3EmExporter"];
+    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter"];
     
     // static List<string> tagNames = ["development"];
     // static List<string> projectNames = ["ShellyPlus1PmExporter"];
