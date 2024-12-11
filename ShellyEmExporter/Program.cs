@@ -11,7 +11,7 @@ internal static class Program
 {
     static ILogger log = null!;
     
-    const string configName = "shellyEMExporter";
+    const string configName = "shellyEmExporter";
     const int defaultPort = 10028;
     static int listenPort = defaultPort;
     
