@@ -1,8 +1,7 @@
 # ShellyExporters
-All Shelly Exporters for Prometheus that I have written.
+All Shelly Exporters for Prometheus that I have written or others have contributed.
 
-This is a repository where I keep all my Shelly Exporters and make them available for others that look for them.
-Other implementations were quite old and/or didn't give enough flexibility so I made my own in C#.
+This repository started with me looking to export my Shelly devices using Prometheus. Other implementations were quite old and/or didn't give enough flexibility, so I wrote my own in C#.
 
 Each exporter is available as a docker container
 
@@ -12,12 +11,12 @@ Visit the wiki for documentation
 
 ## Exporter Requests
 
-If you would like me to write exporters for more Shelly devices I am happy to do so when I have some spare time. Open a new issue and we can discuss it.  
+If you would like me to write exporters for more Shelly devices, I am happy to do so when I have some spare time. Open a new issue, and we can discuss it.  
 You may also create a pull request if you can do it yourself and understand the architecture that I am trying to maintain.
 
-For me to write another exporter I will need:
+For me to write another exporter, I will need:
 - Access to the device for testing - Simple port forward access is enough
-- A few weeks of time - I may not have much free time and testing exporters takes a lot of time
+- A few weeks of time - I may not have much free time, and testing exporters can take a lot of time when there are issues.
 
 ## Example Grafana Dashboard Showcase
 
