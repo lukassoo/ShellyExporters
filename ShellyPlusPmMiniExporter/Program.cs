@@ -86,56 +86,56 @@ internal static class Program
         {
             if (!device.IgnoreTotalPower)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_total_power", 
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_total_power", 
                                                 "The total power/energy consumed in Watt-hours",
                                                 () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IgnoreCurrentPower)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_currently_used_power", 
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_currently_used_power", 
                                                 "The amount of power currently flowing in watts",
                                                 () => device.CurrentlyUsedPower.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
             if (!device.IgnoreVoltage)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_voltage",
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_voltage",
                                                 "The current voltage in volts",
                                                 () => device.Voltage.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IgnoreCurrent)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_current",
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_current",
                                                 "The currently flowing current in amperes",
                                                 () => device.Current.ToString("0.00", CultureInfo.InvariantCulture)));
             }
 
             if (!device.IgnoreInputState)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_input_state",
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_state",
                                                 "The state of the input",
                                                 () => device.InputState ? "1" : "0"));
             }
             
             if (!device.IgnoreInputPercent)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_input_percent",
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_percent",
                                                 "Input analog value in percent",
                                                 () => device.InputPercent.ToString("0.00", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IgnoreInputCountTotal)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_input_count",
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_count",
                     "Total pulses counted on the input",
                     () => device.InputCountTotal.ToString("D", CultureInfo.InvariantCulture)));
             }
             
             if (!device.IgnoreInputFrequency)
             {
-                deviceMetrics.Add(new GaugeMetric("ShellyPlusPmMini_" + device.GetTargetName() + "_input_frequency",
+                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_frequency",
                     "Network frequency on the input",
                     () => device.InputFrequency.ToString("0.00", CultureInfo.InvariantCulture)));
             }
