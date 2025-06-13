@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace Utilities.Networking.RequestHandling.WebSockets;
 
 public class IdParam
 {
-    [JsonProperty("id")] public int Id { get; set; }
+    [JsonPropertyName("id")] public int Id { get; set; }
 }

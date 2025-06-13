@@ -9,17 +9,17 @@ namespace BuildAutomation;
 /// Automates building exporter containers for all architectures and pushing them to Docker Hub
 /// <br/> Requirements: .NET SDK installed and Docker Desktop running.
 /// <br/>
-/// <br/> If anyone else wants to use this and push images - change the image names below to point to your repository instead of mine (lukassoo) and set pushImages to true 
+/// <br/> If anyone else wants to use this and push your own images - change the image names below to point to your repository instead of mine (lukassoo) and set pushImages to true 
 /// </summary>
 internal static class Program
 {
     static ILogger log = null!;
 
     static List<string> tagNames = ["armv7", "armv8", "latest"];
-    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter"];
+    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyProEmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter"];
     
     // static List<string> tagNames = ["development"];
-    // static List<string> projectNames = ["ShellyPlus1PmExporter"];
+    // static List<string> projectNames = ["ShellyProEmExporter"];
 
     const bool pushImages = false;
     
@@ -30,6 +30,7 @@ internal static class Program
         {"ShellyPlus1PmExporter", "lukassoo/shelly-plus-1pm-exporter"},
         {"ShellyPlusPlugExporter", "lukassoo/shelly-plus-plug-exporter"},
         {"ShellyPro3EmExporter", "lukassoo/shelly-pro-3em-exporter"},
+        {"ShellyProEmExporter", "lukassoo/shelly-pro-em-exporter"},
         {"ShellyPlusPmMiniExporter", "lukassoo/shelly-plus-pm-mini-exporter"},
         {"ShellyEmExporter", "lukassoo/shelly-em-exporter"}
     };

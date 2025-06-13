@@ -1,7 +1,7 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 using Uri = System.Uri;
 
@@ -12,19 +12,24 @@ public class WebSocketHandler
     static ILogger log = Log.ForContext(typeof(WebSocketHandler));
     
     ClientWebSocket? webSocket;
-    string targetUrl;
+    readonly string targetUrl;
 
-    CancellationTokenSource cancellationTokenSource = new();
-    byte[] responseBuffer = new byte[1024 * 10];
+    readonly CancellationTokenSource cancellationTokenSource = new();
+    readonly byte[] responseBuffer = new byte[1024 * 10];
 
     readonly TimeSpan requestTimeoutTime;
-    readonly RequestObject requestObject;
+    RequestObject requestObject;
     string requestJson = null!;
     
     AuthObject? authObject;
     string? password;
 
     bool isConnecting;
+
+    readonly JsonSerializerOptions options = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
     
     public WebSocketHandler(string targetUrl, RequestObject requestObject, TimeSpan requestTimeoutTime)
     {
@@ -57,6 +62,13 @@ public class WebSocketHandler
         password = authPassword;
     }
 
+    public void UpdateRequestObject(Action<RequestObject> updateAction)
+    {
+        updateAction(requestObject);
+        
+        UpdateRequestJson();
+    }
+
     public async Task<string?> Request()
     {
         try
@@ -69,7 +81,7 @@ public class WebSocketHandler
 
             if (!sendSuccessful)
             {
-                log.Warning("Send failed, failing request" + requestJson);
+                log.Warning("Send failed, failing request: " + requestJson);
                 return null;
             }
 
@@ -287,8 +299,8 @@ public class WebSocketHandler
             
             authObject = new AuthObject(password!, realm!)
             {
-                nonce = messageJson.RootElement.GetProperty("nonce").GetInt32(),
-                cnonce = 0,
+                Nonce = messageJson.RootElement.GetProperty("nonce").GetInt32(),
+                Cnonce = 0,
                 nc = messageJson.RootElement.GetProperty("nc").GetInt32()
             };
 
@@ -308,11 +320,11 @@ public class WebSocketHandler
     {
         if (authObject == null)
         {
-            requestJson = JsonConvert.SerializeObject(requestObject);
+            requestJson = JsonSerializer.Serialize(requestObject, options);
             return;
         }
         
         requestObject.AuthObject = authObject;
-        requestJson = JsonConvert.SerializeObject(requestObject);
+        requestJson = JsonSerializer.Serialize(requestObject, options);
     }
 }

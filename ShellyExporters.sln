@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellyPlusPmMiniExporter", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellyEmExporter", "ShellyEmExporter\ShellyEmExporter.csproj", "{72427D00-F032-4DC5-8713-95016F646626}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShellyProEmExporter", "ShellyProEmExporter\ShellyProEmExporter.csproj", "{1BDF5101-8BEF-4C27-A1F4-46A7996F43B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{72427D00-F032-4DC5-8713-95016F646626}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72427D00-F032-4DC5-8713-95016F646626}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72427D00-F032-4DC5-8713-95016F646626}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BDF5101-8BEF-4C27-A1F4-46A7996F43B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BDF5101-8BEF-4C27-A1F4-46A7996F43B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BDF5101-8BEF-4C27-A1F4-46A7996F43B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BDF5101-8BEF-4C27-A1F4-46A7996F43B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
