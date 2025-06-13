@@ -11,12 +11,13 @@ Visit the wiki for documentation
 
 ## Exporter Requests
 
-If you would like me to write exporters for more Shelly devices, I am happy to do so when I have some spare time. Open a new issue, and we can discuss it.  
+If you would like me to write exporters for more Shelly devices, I am happy to do so when I have some spare time.  
+Open a new issue, and we can discuss it.  
 You may also create a pull request if you can do it yourself and understand the architecture that I am trying to maintain.
 
 For me to write another exporter, I will need:
-- Access to the device for testing - Simple port forward access is enough
-- A few weeks of time - I may not have much free time, and testing exporters can take a lot of time when there are issues.
+- Access to the device for testing (simple port forward), or, you willing to test builds/containers on your end.
+- A few days of time - I may not have much free time at a given moment, testing exporters can take some time when there are issues.
 
 ## Example Grafana Dashboard Showcase
 
