@@ -8,6 +8,11 @@ public class TargetMeter
     public bool ignoreActivePower;
     public bool ignoreApparentPower;
     public bool ignorePowerFactor;
+    public bool ignoreFrequency;
+    public bool ignoreActiveEnergy;
+    public bool ignoreReturnedActiveEnergy;
+    public bool ignoreTemperature;
+    public bool ignoreOutput;
 
     // Parameterless constructor for deserialization
     public TargetMeter() {}

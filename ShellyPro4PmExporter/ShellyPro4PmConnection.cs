@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
+using ShellyPro3EmExporter;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro4PmExporter;
@@ -42,7 +43,7 @@ public class ShellyPro4PmConnection
             {
                 MethodParams = new IdParam
                 {
-                    Id = targetMeters[i].meterIndex
+                    Id = targetMeters[i].index
                 }
             };
 
@@ -138,6 +139,31 @@ public class ShellyPro4PmConnection
             if (!meterReading.powerFactorIgnored)
             {
                 meterReading.powerFactor = paramsElement.GetProperty("pf").GetSingle();
+            }
+
+            if (!meterReading.frequencyIgnored)
+            {
+                meterReading.frequency = paramsElement.GetProperty("freq").GetSingle();
+            }
+
+            if (!meterReading.activeEnergyIgnored)
+            {
+                meterReading.activeEnergy = paramsElement.GetProperty("aenergy").GetProperty("total").GetSingle();
+            }
+
+            if (!meterReading.returnedActiveEnergyIgnored)
+            {
+                meterReading.returnedActiveEnergy = paramsElement.GetProperty("ret_aenergy").GetProperty("total").GetSingle();
+            }
+
+            if (!meterReading.temperatureIgnored)
+            {
+                meterReading.temperature = paramsElement.GetProperty("temperature").GetProperty("tC").GetSingle();
+            }
+
+            if (!meterReading.outputIgnored)
+            {
+                meterReading.output = paramsElement.GetProperty("output").GetBoolean();
             }
 
             return true;

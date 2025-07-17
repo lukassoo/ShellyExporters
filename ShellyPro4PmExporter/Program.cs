@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Serilog;
+using ShellyPro3EmExporter;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
@@ -126,6 +127,36 @@ internal static class Program
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power_factor",
                                                    "Power Factor", () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture)));
+                }
+
+                if (!meterReading.frequencyIgnored)
+                {
+                    deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_frequency",
+                                                   "Frequency (Hz)", () => meterReading.frequency.ToString("0.00", CultureInfo.InvariantCulture)));
+                }
+
+                if (!meterReading.activeEnergyIgnored)
+                {
+                    deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_active_energy",
+                                                   "Active Energy (Wh)", () => meterReading.activeEnergy.ToString("0.000", CultureInfo.InvariantCulture)));
+                }
+
+                if (!meterReading.returnedActiveEnergyIgnored)
+                {
+                    deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_returned_active_energy",
+                                                   "Returned Active Energy (Wh)", () => meterReading.returnedActiveEnergy.ToString("0.000", CultureInfo.InvariantCulture)));
+                }
+
+                if (!meterReading.temperatureIgnored)
+                {
+                    deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_temperature",
+                                                   "Temperature (°C)", () => meterReading.temperature.ToString("0.0", CultureInfo.InvariantCulture)));
+                }
+
+                if (!meterReading.outputIgnored)
+                {
+                    deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_output",
+                                                   "Output State", () => meterReading.output ? "1" : "0"));
                 }
             }
         }
