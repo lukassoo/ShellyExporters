@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
-using ShellyPro3EmExporter;
+using ShellyPro4PmExporter;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro4PmExporter;

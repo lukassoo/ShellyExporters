@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using Serilog;
-using ShellyPro3EmExporter;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;

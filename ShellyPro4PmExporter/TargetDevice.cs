@@ -1,4 +1,4 @@
-﻿namespace ShellyPro3EmExporter;
+namespace ShellyPro4PmExporter;
 
 public class TargetDevice
 {
