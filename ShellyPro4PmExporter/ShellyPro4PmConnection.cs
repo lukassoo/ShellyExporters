@@ -87,7 +87,7 @@ public class ShellyPro4PmConnection
             
             TimeSpan requestTime = requestStopWatch.Elapsed;
             requestStopWatch.Reset();
-            log.Debug("Regular metrics request for meter index {meterIndex} took: {requestTime} ms", meterReading.meterIndex, requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
+            log.Debug("Metrics request for meter index {meterIndex} took: {requestTime} ms", meterReading.meterIndex, requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
             
             if (string.IsNullOrEmpty(requestResponse))
             {
@@ -97,7 +97,7 @@ public class ShellyPro4PmConnection
 
             if (!UpdateMetrics(meterReading, requestResponse))
             {
-                log.Error("Failed to update regular metrics");
+                log.Error("Failed to update metrics");
                 return false;
             }
         }
