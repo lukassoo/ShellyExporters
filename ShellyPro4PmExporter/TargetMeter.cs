@@ -6,7 +6,6 @@ public class TargetMeter
     public bool ignoreVoltage;
     public bool ignoreCurrent;
     public bool ignoreActivePower;
-    public bool ignoreApparentPower;
     public bool ignorePowerFactor;
     public bool ignoreFrequency;
     public bool ignoreActiveEnergy;

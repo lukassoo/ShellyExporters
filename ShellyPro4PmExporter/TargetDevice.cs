@@ -8,21 +8,10 @@ public class TargetDevice
     public float requestTimeoutTime = 3;
 
     public TargetMeter[] targetMeters;
-
-    public bool ignoreTotalCurrent;
-    public bool ignoreTotalActivePower;
-    public bool ignoreTotalApparentPower;
-
+    
     public bool ignoreTotalActiveEnergy;
     public bool ignoreTotalActiveReturnedEnergy;
-
-    public bool ignoreTotalActiveEnergyPhase1;
-    public bool ignoreTotalActiveEnergyPhase2;
-    public bool ignoreTotalActiveEnergyPhase3;
-    public bool ignoreTotalActiveReturnedEnergyPhase1;
-    public bool ignoreTotalActiveReturnedEnergyPhase2;
-    public bool ignoreTotalActiveReturnedEnergyPhase3;
-
+    
     // Parameterless constructor for deserialization
     public TargetDevice()
     {
@@ -43,10 +32,5 @@ public class TargetDevice
     public bool RequiresAuthentication()
     {
         return !string.IsNullOrEmpty(password);
-    }
-
-    public bool NeedsTotalEnergyRequests()
-    {
-        return !ignoreTotalActiveEnergy || !ignoreTotalActiveReturnedEnergy;
     }
 }

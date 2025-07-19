@@ -116,12 +116,6 @@ internal static class Program
                         "Active Power (W)", () => meterReading.activePower.ToString("0.00", CultureInfo.InvariantCulture)));
                 }
 
-                if (!meterReading.apparentPowerIgnored)
-                {
-                    deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_apparent_power",
-                        "Apparent Power (VA)", () => meterReading.apparentPower.ToString("0.00", CultureInfo.InvariantCulture)));
-                }
-
                 if (!meterReading.powerFactorIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_power_factor",
@@ -134,16 +128,16 @@ internal static class Program
                                                    "Frequency (Hz)", () => meterReading.frequency.ToString("0.00", CultureInfo.InvariantCulture)));
                 }
 
-                if (!meterReading.activeEnergyIgnored)
+                if (!meterReading.totalActiveEnergyIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_active_energy",
-                                                   "Active Energy (Wh)", () => meterReading.activeEnergy.ToString("0.000", CultureInfo.InvariantCulture)));
+                                                   "Total Active Energy (Wh)", () => meterReading.totalActiveEnergy.ToString("0.000", CultureInfo.InvariantCulture)));
                 }
 
-                if (!meterReading.returnedActiveEnergyIgnored)
+                if (!meterReading.totalReturnedActiveEnergyIgnored)
                 {
                     deviceMetrics.Add(new GaugeMetric(metricPrefix + meterReading.meterIndex + "_returned_active_energy",
-                                                   "Returned Active Energy (Wh)", () => meterReading.returnedActiveEnergy.ToString("0.000", CultureInfo.InvariantCulture)));
+                                                   "Total Returned Active Energy (Wh)", () => meterReading.totalReturnedActiveEnergy.ToString("0.000", CultureInfo.InvariantCulture)));
                 }
 
                 if (!meterReading.temperatureIgnored)

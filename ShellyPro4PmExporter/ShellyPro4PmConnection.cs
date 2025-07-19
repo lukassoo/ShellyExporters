@@ -2,14 +2,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
-using ShellyPro4PmExporter;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro4PmExporter;
 
 public class ShellyPro4PmConnection
 {
-    static readonly ILogger log = Log.ForContext(typeof(ShellyPro4PmConnection));
+    static readonly ILogger log = Log.ForContext<ShellyPro4PmConnection>();
 
     readonly string targetName;
 
@@ -20,7 +19,7 @@ public class ShellyPro4PmConnection
 
     readonly MeterReading[] meterReadings;
 
-    readonly WebSocketHandler[] requestHandlers;
+    readonly WebSocketHandler requestHandler;
 
     public ShellyPro4PmConnection(TargetDevice target)
     {
@@ -29,33 +28,29 @@ public class ShellyPro4PmConnection
 
         TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
 
+        RequestObject requestObject = new("Switch.GetStatus")
+        {
+            MethodParams = new IdParam
+            {
+                Id = 0
+            }
+        };
+
+        requestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
+        
+        if (target.RequiresAuthentication())
+        {
+            requestHandler.SetAuth(target.password);
+        }
+        
         int targetMeterCount = target.targetMeters.Length;
         meterReadings = new MeterReading[targetMeterCount];
-        requestHandlers = new WebSocketHandler[targetMeterCount];
 
         TargetMeter[] targetMeters = target.targetMeters;
-
+        
         for (int i = 0; i < targetMeters.Length; i++)
         {
             meterReadings[i] = new MeterReading(targetMeters[i]);
-
-            RequestObject requestObject = new("Switch.GetStatus")
-            {
-                MethodParams = new IdParam
-                {
-                    Id = targetMeters[i].index
-                }
-            };
-
-            requestHandlers[i] = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
-        }
-
-        if (target.RequiresAuthentication())
-        {
-            foreach (WebSocketHandler requestHandler in requestHandlers)
-            {
-                requestHandler.SetAuth(target.password);
-            }
         }
     }
 
@@ -78,30 +73,31 @@ public class ShellyPro4PmConnection
 
         log.Debug("Updating metrics");
 
-        for (int i = 0; i < requestHandlers.Length; i++)
+        foreach (MeterReading meterReading in meterReadings)
         {
-            log.Debug("Starting metrics request for switch {switchId}", i);
-
+            requestHandler.UpdateRequestObject(o =>
+            {
+                IdParam idParam = (o.MethodParams as IdParam)!;
+                idParam.Id = meterReading.meterIndex;
+            });
+            
             requestStopWatch.Start();
-            string? requestResponse = await requestHandlers[i].Request();
+            string? requestResponse = await requestHandler.Request();
             requestStopWatch.Stop();
-
-            log.Debug("Metrics request for switch {switchId} ended", i);
-
+            
             TimeSpan requestTime = requestStopWatch.Elapsed;
             requestStopWatch.Reset();
-
-            log.Debug("Metrics request for switch {switchId} took: {requestTime} ms", i, requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
-
+            log.Debug("Regular metrics request for meter index {meterIndex} took: {requestTime} ms", meterReading.meterIndex, requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
+            
             if (string.IsNullOrEmpty(requestResponse))
             {
-                log.Error("Request response for switch {switchId} null or empty - could not update metrics", i);
+                log.Error("Request response null or empty - could not update metrics");
                 return false;
             }
 
-            if (!UpdateMetrics(requestResponse, i))
+            if (!UpdateMetrics(meterReading, requestResponse))
             {
-                log.Error("Failed to update metrics for switch {switchId}", i);
+                log.Error("Failed to update regular metrics");
                 return false;
             }
         }
@@ -111,16 +107,14 @@ public class ShellyPro4PmConnection
         return true;
     }
 
-    bool UpdateMetrics(string requestResponse, int meterIndex)
+    bool UpdateMetrics(MeterReading meterReading, string requestResponse)
     {
         try
         {
             JsonDocument json = JsonDocument.Parse(requestResponse);
 
             JsonElement paramsElement = json.RootElement.GetProperty("result");
-
-            MeterReading meterReading = meterReadings[meterIndex];
-
+            
             if (!meterReading.currentIgnored)
             {
                 meterReading.current = paramsElement.GetProperty("current").GetSingle();
@@ -146,14 +140,14 @@ public class ShellyPro4PmConnection
                 meterReading.frequency = paramsElement.GetProperty("freq").GetSingle();
             }
 
-            if (!meterReading.activeEnergyIgnored)
+            if (!meterReading.totalActiveEnergyIgnored)
             {
-                meterReading.activeEnergy = paramsElement.GetProperty("aenergy").GetProperty("total").GetSingle();
+                meterReading.totalActiveEnergy = paramsElement.GetProperty("aenergy").GetProperty("total").GetSingle();
             }
 
-            if (!meterReading.returnedActiveEnergyIgnored)
+            if (!meterReading.totalReturnedActiveEnergyIgnored)
             {
-                meterReading.returnedActiveEnergy = paramsElement.GetProperty("ret_aenergy").GetProperty("total").GetSingle();
+                meterReading.totalReturnedActiveEnergy = paramsElement.GetProperty("ret_aenergy").GetProperty("total").GetSingle();
             }
 
             if (!meterReading.temperatureIgnored)
@@ -170,7 +164,7 @@ public class ShellyPro4PmConnection
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to parse metrics response for switch {switchId}", meterIndex);
+            log.Error(exception, "Failed to parse metrics response for switch {switchId}", meterReading.meterIndex);
             return false;
         }
     }
