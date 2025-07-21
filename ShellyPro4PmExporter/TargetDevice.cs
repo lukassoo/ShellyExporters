@@ -9,9 +9,6 @@ public class TargetDevice
 
     public TargetMeter[] targetMeters;
     
-    public bool ignoreTotalActiveEnergy;
-    public bool ignoreTotalActiveReturnedEnergy;
-    
     // Parameterless constructor for deserialization
     public TargetDevice()
     {

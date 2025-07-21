@@ -6,7 +6,7 @@ namespace ShellyPlusPlugExporter;
 
 public class ShellyPlusPlugConnection
 {
-    static readonly ILogger log = Log.ForContext(typeof(ShellyPlusPlugConnection));
+    static readonly ILogger log = Log.ForContext<ShellyPlusPlugConnection>();
     
     readonly string targetName;
 

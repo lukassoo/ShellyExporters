@@ -6,7 +6,7 @@ namespace ShellyPlus1PmExporter;
 
 public class ShellyPlus1PmConnection
 {
-    static readonly ILogger log = Log.ForContext(typeof(ShellyPlus1PmConnection));
+    static readonly ILogger log = Log.ForContext<ShellyPlus1PmConnection>();
     
     readonly string targetName;
 

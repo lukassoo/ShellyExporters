@@ -6,10 +6,9 @@ namespace ShellyPlugExporter;
 
 public class ShellyPlugConnection
 {
-    static readonly ILogger log = Log.ForContext(typeof(ShellyPlugConnection));
+    static readonly ILogger log = Log.ForContext<ShellyPlugConnection>();
     
     readonly string targetName;
-    readonly string targetUrl;
 
     DateTime lastRequest = DateTime.MinValue;
         
@@ -30,13 +29,13 @@ public class ShellyPlugConnection
     public ShellyPlugConnection(TargetDevice target)
     {
         targetName = target.name;
-        targetUrl = target.url + "/status";
+        string targetUrl1 = target.url + "/status";
 
         IgnoreCurrentPower = target.ignorePowerMetric;
         IgnoreTemperature = target.ignoreTemperatureMetric;
         IgnoreRelayState = target.ignoreRelayStateMetric;
 
-        requestHandler = new HttpRequestHandler(targetUrl, target.RequiresAuthentication());
+        requestHandler = new HttpRequestHandler(targetUrl1, target.RequiresAuthentication());
         
         if (target.RequiresAuthentication())
         {

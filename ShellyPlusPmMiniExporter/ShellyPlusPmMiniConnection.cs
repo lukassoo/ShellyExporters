@@ -6,7 +6,7 @@ namespace ShellyPlusPmMiniExporter;
 
 public class ShellyPlusPmMiniConnection
 {
-    static readonly ILogger log = Log.ForContext(typeof(ShellyPlusPmMiniConnection));
+    static readonly ILogger log = Log.ForContext<ShellyPlusPmMiniConnection>();
     
     readonly string targetName;
 
@@ -63,7 +63,6 @@ public class ShellyPlusPmMiniConnection
         TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
         
         pm1RequestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
-
 
         if (target.NeedsInputStatusRequests())
         {

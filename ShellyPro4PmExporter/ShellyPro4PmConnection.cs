@@ -72,7 +72,6 @@ public class ShellyPro4PmConnection
         TimeSpan requestTime = requestStopWatch.Elapsed;
         log.Debug("Metrics request took: {requestTime} ms", requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
 
-
         if (string.IsNullOrEmpty(requestResponse))
         {
             log.Error("Request response null or empty - could not update metrics");

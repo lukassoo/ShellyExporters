@@ -6,7 +6,7 @@ namespace ShellyEmExporter;
 
 public class ShellyEmConnection
 {
-    static readonly ILogger log = Log.ForContext(typeof(ShellyEmConnection));
+    static readonly ILogger log = Log.ForContext<ShellyEmConnection>();
 
     readonly string targetName;
 
