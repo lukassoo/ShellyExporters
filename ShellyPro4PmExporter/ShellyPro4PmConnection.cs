@@ -28,13 +28,7 @@ public class ShellyPro4PmConnection
 
         TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
 
-        RequestObject requestObject = new("Switch.GetStatus")
-        {
-            MethodParams = new IdParam
-            {
-                Id = 0
-            }
-        };
+        RequestObject requestObject = new("Shelly.GetStatus");
 
         requestHandler = new WebSocketHandler(targetUrl, requestObject, requestTimeoutTime);
         
@@ -73,98 +67,91 @@ public class ShellyPro4PmConnection
 
         log.Debug("Updating metrics");
 
-        foreach (MeterReading meterReading in meterReadings)
-        {
-            requestHandler.UpdateRequestObject(o =>
-            {
-                IdParam idParam = (o.MethodParams as IdParam)!;
-                idParam.Id = meterReading.meterIndex;
-            });
-            
-            requestStopWatch.Start();
-            string? requestResponse = await requestHandler.Request();
-            requestStopWatch.Stop();
-            
-            TimeSpan requestTime = requestStopWatch.Elapsed;
-            requestStopWatch.Reset();
-            log.Debug("Metrics request for meter index {meterIndex} took: {requestTime} ms", meterReading.meterIndex, requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
-            
-            if (string.IsNullOrEmpty(requestResponse))
-            {
-                log.Error("Request response null or empty - could not update metrics");
-                return false;
-            }
+        requestStopWatch.Restart();
+        string? requestResponse = await requestHandler.Request();
+        TimeSpan requestTime = requestStopWatch.Elapsed;
+        log.Debug("Metrics request took: {requestTime} ms", requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
 
-            if (!UpdateMetrics(meterReading, requestResponse))
-            {
-                log.Error("Failed to update metrics");
-                return false;
-            }
+
+        if (string.IsNullOrEmpty(requestResponse))
+        {
+            log.Error("Request response null or empty - could not update metrics");
+            return false;
         }
 
+        if (!UpdateMetrics(requestResponse))
+        {
+            log.Error("Failed to update metrics");
+            return false;
+        }
+        
         log.Debug("Updating metrics completed");
         lastSuccessfulRequest = DateTime.UtcNow;
         return true;
     }
 
-    bool UpdateMetrics(MeterReading meterReading, string requestResponse)
+    bool UpdateMetrics(string requestResponse)
     {
         try
         {
             JsonDocument json = JsonDocument.Parse(requestResponse);
+            JsonElement resultElement = json.RootElement.GetProperty("result");
 
-            JsonElement paramsElement = json.RootElement.GetProperty("result");
+            foreach (MeterReading meterReading in meterReadings)
+            {
+                JsonElement paramsElement = resultElement.GetProperty($"switch:{meterReading.meterIndex}");
+                
+                if (!meterReading.currentIgnored)
+                {
+                    meterReading.current = paramsElement.GetProperty("current").GetSingle();
+                }
+
+                if (!meterReading.voltageIgnored)
+                {
+                    meterReading.voltage = paramsElement.GetProperty("voltage").GetSingle();
+                }
+
+                if (!meterReading.activePowerIgnored)
+                {
+                    meterReading.activePower = paramsElement.GetProperty("apower").GetSingle();
+                }
+
+                if (!meterReading.powerFactorIgnored)
+                {
+                    meterReading.powerFactor = paramsElement.GetProperty("pf").GetSingle();
+                }
+
+                if (!meterReading.frequencyIgnored)
+                {
+                    meterReading.frequency = paramsElement.GetProperty("freq").GetSingle();
+                }
+
+                if (!meterReading.totalActiveEnergyIgnored)
+                {
+                    meterReading.totalActiveEnergy = paramsElement.GetProperty("aenergy").GetProperty("total").GetSingle();
+                }
+
+                if (!meterReading.totalReturnedActiveEnergyIgnored)
+                {
+                    meterReading.totalReturnedActiveEnergy = paramsElement.GetProperty("ret_aenergy").GetProperty("total").GetSingle();
+                }
+
+                if (!meterReading.temperatureIgnored)
+                {
+                    meterReading.temperature = paramsElement.GetProperty("temperature").GetProperty("tC").GetSingle();
+                }
+
+                if (!meterReading.outputIgnored)
+                {
+                    meterReading.output = paramsElement.GetProperty("output").GetBoolean();
+                }
+            }
             
-            if (!meterReading.currentIgnored)
-            {
-                meterReading.current = paramsElement.GetProperty("current").GetSingle();
-            }
-
-            if (!meterReading.voltageIgnored)
-            {
-                meterReading.voltage = paramsElement.GetProperty("voltage").GetSingle();
-            }
-
-            if (!meterReading.activePowerIgnored)
-            {
-                meterReading.activePower = paramsElement.GetProperty("apower").GetSingle();
-            }
-
-            if (!meterReading.powerFactorIgnored)
-            {
-                meterReading.powerFactor = paramsElement.GetProperty("pf").GetSingle();
-            }
-
-            if (!meterReading.frequencyIgnored)
-            {
-                meterReading.frequency = paramsElement.GetProperty("freq").GetSingle();
-            }
-
-            if (!meterReading.totalActiveEnergyIgnored)
-            {
-                meterReading.totalActiveEnergy = paramsElement.GetProperty("aenergy").GetProperty("total").GetSingle();
-            }
-
-            if (!meterReading.totalReturnedActiveEnergyIgnored)
-            {
-                meterReading.totalReturnedActiveEnergy = paramsElement.GetProperty("ret_aenergy").GetProperty("total").GetSingle();
-            }
-
-            if (!meterReading.temperatureIgnored)
-            {
-                meterReading.temperature = paramsElement.GetProperty("temperature").GetProperty("tC").GetSingle();
-            }
-
-            if (!meterReading.outputIgnored)
-            {
-                meterReading.output = paramsElement.GetProperty("output").GetBoolean();
-            }
-
             return true;
         }
         catch (Exception exception)
         {
-            log.Error(exception, "Failed to parse metrics response for switch {switchId}", meterReading.meterIndex);
+            log.Error(exception, "Failed to parse metrics response");
             return false;
         }
     }
