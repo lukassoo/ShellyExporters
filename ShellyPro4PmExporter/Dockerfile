@@ -4,7 +4,7 @@ COPY bin/Release/net9.0/publish/ App/
 WORKDIR /App
 
 ENV DOTNET_EnableDiagnostics=0
-EXPOSE 10012/tcp
+EXPOSE 10037/tcp
 VOLUME /Config
 VOLUME /Logs
 
