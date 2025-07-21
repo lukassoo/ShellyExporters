@@ -8,8 +8,8 @@ public class TargetMeter
     public bool ignoreActivePower;
     public bool ignorePowerFactor;
     public bool ignoreFrequency;
-    public bool ignoreActiveEnergy;
-    public bool ignoreReturnedActiveEnergy;
+    public bool ignoreTotalActiveEnergy;
+    public bool ignoreTotalReturnedActiveEnergy;
     public bool ignoreTemperature;
     public bool ignoreOutput;
 

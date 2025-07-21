@@ -31,8 +31,8 @@ public class MeterReading
         activePowerIgnored = targetMeter.ignoreActivePower;
         powerFactorIgnored = targetMeter.ignorePowerFactor;
         frequencyIgnored = targetMeter.ignoreFrequency;
-        totalActiveEnergyIgnored = targetMeter.ignoreActiveEnergy;
-        totalReturnedActiveEnergyIgnored = targetMeter.ignoreReturnedActiveEnergy;
+        totalActiveEnergyIgnored = targetMeter.ignoreTotalActiveEnergy;
+        totalReturnedActiveEnergyIgnored = targetMeter.ignoreTotalReturnedActiveEnergy;
         temperatureIgnored = targetMeter.ignoreTemperature;
         outputIgnored = targetMeter.ignoreOutput;
     }
