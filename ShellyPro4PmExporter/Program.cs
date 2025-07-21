@@ -12,7 +12,7 @@ internal static class Program
     static ILogger log = null!;
 
     const string configName = "shellyPro4PmExporter";
-    const int defaultPort = 10012;
+    const int defaultPort = 10037;
     static int listenPort = defaultPort;
 
     static readonly Dictionary<ShellyPro4PmConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
