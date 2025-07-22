@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Serilog;
 using Utilities;
+using Utilities.Components;
 using Utilities.Configs;
 using Utilities.Metrics;
 using Utilities.Networking;
@@ -15,7 +16,7 @@ internal static class Program
     const int defaultPort = 10037;
     static int listenPort = defaultPort;
 
-    static readonly Dictionary<ShellyPro4PmConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<ShellyPro4PmConnection, List<BaseMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
@@ -65,7 +66,10 @@ internal static class Program
             config.targets.Add(new TargetDevice("Your Name for the device - like \"power_sockets\" - keep it formatted like that, lowercase with underscores",
                 "Address (usually 192.168.X.X - the IP of your device)",
                 "Password (leave empty if not used)",
-                targetMeters));
+                targetMeters)
+            {
+                enableComponentMetrics = false // Set to true to enable BTHome component metrics
+            });
 
             Configuration.WriteConfig(configName, config);
             return true;
@@ -89,7 +93,7 @@ internal static class Program
 
     static void SetupMetrics()
     {
-        foreach ((ShellyPro4PmConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((ShellyPro4PmConnection device, List<BaseMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             string deviceName = device.GetTargetName();
             string metricPrefix = "shellyPro4Pm_" + deviceName + "_";
@@ -186,7 +190,7 @@ internal static class Program
     {
         string allMetrics = "";
 
-        foreach ((ShellyPro4PmConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((ShellyPro4PmConnection device, List<BaseMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             if (!await device.UpdateMetricsIfNecessary())
             {
@@ -194,9 +198,16 @@ internal static class Program
                 continue;
             }
 
-            foreach (GaugeMetric metric in deviceMetrics)
+            // Collect regular metrics
+            foreach (BaseMetric metric in deviceMetrics)
             {
                 allMetrics += metric.GetMetric();
+            }
+
+            // Collect dynamic component metrics if enabled
+            if (device.HasComponentsEnabled())
+            {
+                allMetrics += device.GetComponentMetrics($"shellyPro4Pm_{device.GetTargetName()}");
             }
         }
 

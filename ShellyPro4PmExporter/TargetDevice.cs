@@ -6,6 +6,7 @@ public class TargetDevice
     public string url;
     public string password;
     public float requestTimeoutTime = 3;
+    public bool enableComponentMetrics = false;
 
     public TargetMeter[] targetMeters;
     
