@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
+using Utilities.Components;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro4PmExporter;
@@ -18,6 +19,7 @@ public class ShellyPro4PmConnection
     readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
     readonly MeterReading[] meterReadings;
+    readonly BtHomeComponentsHandler? componentsHandler;
 
     readonly WebSocketHandler requestHandler;
 
@@ -35,6 +37,13 @@ public class ShellyPro4PmConnection
         if (target.RequiresAuthentication())
         {
             requestHandler.SetAuth(target.password);
+        }
+
+        // Setup components handler if enabled
+        if (target.enableComponentMetrics)
+        {
+            string? password = target.RequiresAuthentication() ? target.password : null;
+            componentsHandler = new BtHomeComponentsHandler(targetUrl, requestTimeoutTime, password);
         }
         
         int targetMeterCount = target.targetMeters.Length;
@@ -58,6 +67,15 @@ public class ShellyPro4PmConnection
         return meterReadings;
     }
 
+    public IReadOnlyCollection<BtHomeDevice>? GetBtHomeDevices()
+     => componentsHandler?.GetDevices();
+
+    public bool HasComponentsEnabled()
+        => componentsHandler != null;
+
+    public string GetComponentMetrics(string metricPrefix)
+     => componentsHandler?.GenerateMetrics(metricPrefix) ?? "";
+
     public async Task<bool> UpdateMetricsIfNecessary()
     {
         if (DateTime.UtcNow - lastSuccessfulRequest < minimumTimeBetweenRequests)
@@ -68,20 +86,37 @@ public class ShellyPro4PmConnection
         log.Debug("Updating metrics");
 
         requestStopWatch.Restart();
-        string? requestResponse = await requestHandler.Request();
-        TimeSpan requestTime = requestStopWatch.Elapsed;
-        log.Debug("Metrics request took: {requestTime} ms", requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
 
-        if (string.IsNullOrEmpty(requestResponse))
+        // Make simultaneous requests
+        Task<string?> statusTask = requestHandler.Request();
+        Task<bool>? componentsTask = componentsHandler?.UpdateComponentsFromDevice();
+
+        // Wait for status request (required)
+        string? statusResponse = await statusTask;
+        TimeSpan requestTime = requestStopWatch.Elapsed;
+        log.Debug("Status request took: {requestTime} ms", requestTime.TotalMilliseconds.ToString("F1", CultureInfo.InvariantCulture));
+
+        if (string.IsNullOrEmpty(statusResponse))
         {
-            log.Error("Request response null or empty - could not update metrics");
+            log.Error("Status request response null or empty - could not update metrics");
             return false;
         }
 
-        if (!UpdateMetrics(requestResponse))
+        // Update status metrics
+        if (!UpdateMetrics(statusResponse))
         {
-            log.Error("Failed to update metrics");
+            log.Error("Failed to update status metrics");
             return false;
+        }
+
+        // Wait for and update components if enabled
+        if (componentsTask != null)
+        {
+            bool componentsUpdated = await componentsTask;
+            if (!componentsUpdated)
+            {
+                log.Warning("Failed to update component metrics, but continuing");
+            }
         }
         
         log.Debug("Updating metrics completed");
