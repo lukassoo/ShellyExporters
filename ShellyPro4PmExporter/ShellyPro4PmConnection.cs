@@ -2,11 +2,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
+using Utilities.Networking;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro4PmExporter;
 
-public class ShellyPro4PmConnection
+public class ShellyPro4PmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPro4PmConnection>();
 

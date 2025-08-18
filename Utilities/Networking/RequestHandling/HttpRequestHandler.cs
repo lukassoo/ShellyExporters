@@ -5,7 +5,7 @@ namespace Utilities.Networking.RequestHandling;
 
 public class HttpRequestHandler
 {
-    static ILogger log = Log.ForContext(typeof(HttpRequestHandler));
+    static readonly ILogger log = Log.ForContext<HttpRequestHandler>();
 
     readonly HttpClient httpClient;
     readonly CredentialCache? credentialCache;

@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using Serilog;
+using Utilities.Networking;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPlus1PmExporter;
 
-public class ShellyPlus1PmConnection
+public class ShellyPlus1PmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPlus1PmConnection>();
     

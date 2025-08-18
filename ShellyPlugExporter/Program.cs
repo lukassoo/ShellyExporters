@@ -14,7 +14,7 @@ internal static class Program
     const int defaultPort = 9918;
     static int listenPort = defaultPort;
     
-    static readonly Dictionary<ShellyPlugConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<IDeviceConnection, List<IMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
@@ -32,8 +32,12 @@ internal static class Program
             listenPort = config.listenPort;
             
             SetupDevicesFromConfig(config);
-            SetupMetrics();
-            StartMetricsServer();
+            SetupMetrics(config.useOldIncorrectMetricNames);
+            
+            if (!MetricsServer.Start((ushort)listenPort, _ => MetricsHelper.UpdateDeviceMetrics(deviceToMetricsDictionary)))
+            {
+                RuntimeAutomation.Shutdown("Failed to start metrics server");
+            }
         }
         catch (Exception exception)
         {
@@ -50,7 +54,8 @@ internal static class Program
         {
             Config<TargetDevice> config = new()
             {
-                listenPort = defaultPort
+                listenPort = defaultPort,
+                useOldIncorrectMetricNames = false
             };
 
             config.targets.Add(new TargetDevice("Your Name for the device", 
@@ -78,80 +83,44 @@ internal static class Program
         }
     }
 
-    static void SetupMetrics()
+    static void SetupMetrics(bool oldIncorrectMetricNames)
     {
         log.Information("Setting up metrics");
 
-        foreach ((ShellyPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
+            ShellyPlugConnection device = (ShellyPlugConnection)deviceConnection;
+            
+            string deviceName = device.GetTargetName();
+            
+            string oldMetricPrefix = "shellyPlug_" + deviceName + "_";
+            const string newMetricPrefix = "shellyPlug_";
+            
+            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            
             if (!device.IgnoreCurrentPower)
             {
-                deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_currently_used_power",
-                                                "The amount of power currently flowing through the plug in watts",
-                                                () => device.CurrentlyUsedPower.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing through the plug in watts", deviceName,
+                    () => device.CurrentlyUsedPower.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
 
             if (!device.IgnoreTemperature)
             {
-                deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_temperature",
-                                                "The internal device temperature",
-                                                () => device.Temperature.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "temperature", "The internal device temperature", deviceName, 
+                    () => device.Temperature.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
 
             if (!device.IgnoreRelayState)
             {
-                deviceMetrics.Add(new GaugeMetric("shellyplug_" + device.GetTargetName() + "_relay_state",
-                                                "The state of the relay",
-                                                () => device.RelayStatus ? "1" : "0"));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "The state of the relay", deviceName, 
+                    () => device.RelayStatus ? "1" : "0");
+                
+                deviceMetrics.Add(metric);
             }
         }
-    }
-
-    static void StartMetricsServer()
-    {
-        log.Information("Starting metrics server on port: {port}", listenPort);
-
-        HttpServer.SetResponseFunction(CollectAllMetrics);
-
-        try
-        {
-            HttpServer.ListenOnPort(listenPort);
-        }
-        catch (Exception exception)
-        {
-            log.Information("");
-            log.Information("If the exception below is related to access denied or something else with permissions - " +
-                            "you are probably trying to start this on a Windows machine.\n" +
-                            "It won't let you do it without some special permission as this program will try to listen for all requests.\n" +
-                            "This program was designed to run as a Docker container where this problem does not occur\n" +
-                            "If you really want to launch it anyways but only for local testing you can launch with the \"localhost\" argument" + 
-                            "(Make a shortcut to this program, open its properties window and in the \"Target\" section add \"localhost\" after a space at the end)");
-            log.Information("");
-            log.Information("The exception: " + exception.Message);
-            throw;
-        }
-
-        log.Information("Server started");
-    }
-
-    static async Task<string> CollectAllMetrics()
-    {
-        string allMetrics = "";
-
-        foreach ((ShellyPlugConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
-        {
-            if (!await device.UpdateMetricsIfNecessary())
-            {
-                log.Error("Failed to update metrics for target device: {targetName}", device.GetTargetName());
-                continue;
-            }
-            
-            foreach (GaugeMetric metric in deviceMetrics)
-            {
-                allMetrics += metric.GetMetric();
-            }
-        }
-
-        return allMetrics;
     }
 }

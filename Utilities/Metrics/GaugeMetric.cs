@@ -1,27 +1,39 @@
-﻿namespace Utilities.Metrics;
+﻿using System.Globalization;
+using Prometheus;
+using Serilog;
 
-/// <summary>
-/// A Gauge metric - represents a value that can change in time
-/// </summary>
-public class GaugeMetric : BaseMetric
+namespace Utilities.Metrics;
+
+public class GaugeMetric(Gauge.Child gaugeWithLabel, Func<string> metricValueGetterFunction) : IMetric
 {
-    readonly Func<string> metricGetterFunction;
+    static readonly ILogger log = Log.ForContext<GaugeMetric>();
 
-    /// <summary>
-    /// Constructs a Gauge metric instance
-    /// </summary>
-    /// <param name="name">This will be the name under which Prometheus will see this metric</param>
-    /// <param name="description">This will be seen as the help/description of the metric</param>
-    /// <param name="metricGetterFunction">A function that returns the metric as a string - this will be called every time Prometheus requests/scrapes the metrics</param>
-    public GaugeMetric(string name, string description, Func<string> metricGetterFunction) : base(name, description, MetricType.Gauge)
-    {
-        this.metricGetterFunction = metricGetterFunction;
-    }
+    public bool IsPublished { get; private set; }
 
-    protected override string GetMetricString()
+    public void Update()
     {
-        string metricGetResult = metricGetterFunction();
+        string stringValue = metricValueGetterFunction();
         
-        return GetName() + " " + metricGetResult + '\n';
+        if (!double.TryParse(stringValue, CultureInfo.InvariantCulture, out double metricValue))
+        {
+            log.Error("Could not parse metric value");
+            return;
+        }
+        
+        gaugeWithLabel.Set(metricValue);
+    }
+    
+    public void Unpublish()
+    {
+        gaugeWithLabel.Unpublish();
+        
+        IsPublished = false;
+    }
+    
+    public void Publish()
+    {
+        gaugeWithLabel.Publish();
+        
+        IsPublished = true;
     }
 }

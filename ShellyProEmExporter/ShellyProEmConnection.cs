@@ -2,11 +2,12 @@
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
+using Utilities.Networking;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyProEmExporter;
 
-public class ShellyProEmConnection
+public class ShellyProEmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyProEmConnection>();
 
@@ -19,7 +20,6 @@ public class ShellyProEmConnection
     readonly TimeSpan minimumTimeBetweenRequests = TimeSpan.FromSeconds(0.8);
 
     readonly MeterReading[] meterReadings;
-    static readonly string[] indexToPhaseMap = ["a", "b", "c"];
     
     public bool IsTotalActiveEnergyPhase1Ignored { get; }
     public float TotalActiveEnergyPhase1 { get; private set; }

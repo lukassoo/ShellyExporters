@@ -9,7 +9,7 @@ namespace Utilities.Networking.RequestHandling.WebSockets;
 
 public class WebSocketHandler
 {
-    static ILogger log = Log.ForContext(typeof(WebSocketHandler));
+    static readonly ILogger log = Log.ForContext<WebSocketHandler>();
     
     ClientWebSocket? webSocket;
     readonly string targetUrl;

@@ -9,7 +9,7 @@ public class TargetDevice
     public bool ignorePowerMetric;
     public bool ignoreTemperatureMetric;
     public bool ignoreRelayStateMetric;
-
+    
     // Parameterless constructor for deserialization
     public TargetDevice()
     {

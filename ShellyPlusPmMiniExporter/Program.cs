@@ -15,7 +15,7 @@ internal static class Program
     const int defaultPort = 10024;
     static int listenPort = defaultPort;
     
-    static readonly Dictionary<ShellyPlusPmMiniConnection, List<GaugeMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<IDeviceConnection, List<IMetric>> deviceToMetricsDictionary = new(1);
     
     static async Task Main()
     {
@@ -33,8 +33,12 @@ internal static class Program
             listenPort = config.listenPort;
             
             SetupDevicesFromConfig(config);
-            SetupMetrics();
-            StartMetricsServer();
+            SetupMetrics(config.useOldIncorrectMetricNames);
+            
+            if (!MetricsServer.Start((ushort)listenPort, _ => MetricsHelper.UpdateDeviceMetrics(deviceToMetricsDictionary)))
+            {
+                RuntimeAutomation.Shutdown("Failed to start metrics server");
+            }
         }
         catch (Exception exception)
         {
@@ -78,115 +82,84 @@ internal static class Program
         }
     }
 
-    static void SetupMetrics()
+    static void SetupMetrics(bool oldIncorrectMetricNames)
     {
         log.Information("Setting up metrics");
 
-        foreach ((ShellyPlusPmMiniConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
+            ShellyPlusPmMiniConnection device = (ShellyPlusPmMiniConnection)deviceConnection;
+            
+            string deviceName = device.GetTargetName();
+            
+            string oldMetricPrefix = "shellypluspmmini_" + deviceName + "_";
+            const string newMetricPrefix = "shellypluspmmini_";
+            
+            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            
             if (!device.IgnoreTotalPower)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_total_power", 
-                                                "The total power/energy consumed in Watt-hours",
-                                                () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "total_power", "The total power/energy consumed in Watt-hours", deviceName,
+                    () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
             
             if (!device.IgnoreCurrentPower)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_currently_used_power", 
-                                                "The amount of power currently flowing in watts",
-                                                () => device.CurrentlyUsedPower.ToString("0.00", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing in watts", deviceName, 
+                    () => device.CurrentlyUsedPower.ToString("0.00", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
 
             if (!device.IgnoreVoltage)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_voltage",
-                                                "The current voltage in volts",
-                                                () => device.Voltage.ToString("0.00", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "voltage", "Voltage (V)", deviceName, 
+                    () => device.Voltage.ToString("0.00", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
             
             if (!device.IgnoreCurrent)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_current",
-                                                "The currently flowing current in amperes",
-                                                () => device.Current.ToString("0.00", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "current", "Current (A)", deviceName, 
+                    () => device.Current.ToString("0.00", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
 
             if (!device.IgnoreInputState)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_state",
-                                                "The state of the input",
-                                                () => device.InputState ? "1" : "0"));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "input_state", "The state of the input", deviceName, 
+                    () => device.InputState ? "1" : "0");
+                
+                deviceMetrics.Add(metric);
             }
             
             if (!device.IgnoreInputPercent)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_percent",
-                                                "Input analog value in percent",
-                                                () => device.InputPercent.ToString("0.00", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "input_percent", "Input analog value in percent", deviceName, 
+                    () => device.InputPercent.ToString("0.00", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
             
             if (!device.IgnoreInputCountTotal)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_count",
-                    "Total pulses counted on the input",
-                    () => device.InputCountTotal.ToString("D", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "input_count", "Total pulses counted on the input", deviceName,
+                    () => device.InputCountTotal.ToString("D", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
             
             if (!device.IgnoreInputFrequency)
             {
-                deviceMetrics.Add(new GaugeMetric("shellypluspmmini_" + device.GetTargetName() + "_input_frequency",
-                    "Network frequency on the input",
-                    () => device.InputFrequency.ToString("0.00", CultureInfo.InvariantCulture)));
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "input_frequency", "Network frequency on the input", deviceName,
+                    () => device.InputFrequency.ToString("0.00", CultureInfo.InvariantCulture));
+                
+                deviceMetrics.Add(metric);
             }
         }
-    }
-
-    static void StartMetricsServer()
-    {
-        log.Information("Starting metrics server on port: {port}", defaultPort);
-
-        HttpServer.SetResponseFunction(CollectAllMetrics);
-
-        try
-        {
-            HttpServer.ListenOnPort(listenPort);
-        }
-        catch (Exception exception)
-        {
-            log.Information("");
-            log.Information("If the exception below is related to access denied or something else with permissions - " +
-                            "you are probably trying to start this on a Windows machine.\n" +
-                            "It won't let you do it without some special permission as this program will try to listen for all requests.\n" +
-                            "This program was designed to run as a Docker container where this problem does not occur\n" +
-                            "If you really want to launch it anyways but only for local testing you can launch with the \"localhost\" argument" + 
-                            "(Make a shortcut to this program, open its properties window and in the \"Target\" section add \"localhost\" after a space at the end)");
-            log.Information("");
-            log.Information("The exception: " + exception.Message);
-            throw;
-        }
-
-        log.Information("Server started");
-    }
-
-    static async Task<string> CollectAllMetrics()
-    {
-        string allMetrics = "";
-
-        foreach ((ShellyPlusPmMiniConnection device, List<GaugeMetric> deviceMetrics) in deviceToMetricsDictionary)
-        {
-            if (!await device.UpdateMetricsIfNecessary())
-            {
-                log.Error("Failed to update metrics for target device: {targetName}", device.GetTargetName());
-                continue;
-            }
-            
-            foreach (GaugeMetric metric in deviceMetrics)
-            {
-                allMetrics += metric.GetMetric();
-            }
-        }
-
-        return allMetrics;
     }
 }

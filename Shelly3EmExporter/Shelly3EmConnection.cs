@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
 using Serilog;
+using Utilities.Networking;
 using Utilities.Networking.RequestHandling;
 
 namespace Shelly3EmExporter;
 
-public class Shelly3EmConnection
+public class Shelly3EmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<Shelly3EmConnection>();
 

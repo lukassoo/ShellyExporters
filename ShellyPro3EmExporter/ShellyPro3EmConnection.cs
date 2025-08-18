@@ -2,11 +2,12 @@
 using System.Globalization;
 using System.Text.Json;
 using Serilog;
+using Utilities.Networking;
 using Utilities.Networking.RequestHandling.WebSockets;
 
 namespace ShellyPro3EmExporter;
 
-public class ShellyPro3EmConnection
+public class ShellyPro3EmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPro3EmConnection>();
 
