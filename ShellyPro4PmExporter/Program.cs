@@ -61,10 +61,10 @@ internal static class Program
 
             TargetMeter[] targetMeters =
             [
-                new(0),
                 new(1),
                 new(2),
-                new(3)
+                new(3),
+                new(4)
             ];
 
             config.targets.Add(new TargetDevice("Your Name for the device - like \"power_sockets\" - keep it formatted like that, lowercase with underscores",

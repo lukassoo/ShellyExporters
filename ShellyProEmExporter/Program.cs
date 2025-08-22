@@ -61,8 +61,8 @@ internal static class Program
 
             TargetMeter[] targetMeters =
             [
-                new(0),
-                new(1)
+                new(1),
+                new(2)
             ];
 
             config.targets.Add(new TargetDevice("Your Name for the device - like \"solar_power\" - keep it formatted like that, lowercase with underscores",
@@ -150,7 +150,7 @@ internal static class Program
 
             if (!device.IsTotalActiveEnergyPhase1Ignored)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "0_total_active_energy", "Total Phase 1 Active Energy (Wh)", deviceName, 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "1_total_active_energy", "Total Phase 1 Active Energy (Wh)", deviceName, 
                     () => device.TotalActiveEnergyPhase1.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
@@ -158,7 +158,7 @@ internal static class Program
 
             if (!device.IsTotalActiveEnergyPhase2Ignored)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "1_total_active_energy", "Total Phase 2 Active Energy (Wh)", deviceName, 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "2_total_active_energy", "Total Phase 2 Active Energy (Wh)", deviceName, 
                     () => device.TotalActiveEnergyPhase2.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
@@ -166,7 +166,7 @@ internal static class Program
 
             if (!device.IsTotalActiveEnergyReturnedPhase1Ignored)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "0_total_active_energy_returned", "Total Phase 1 Active Energy Returned to the grid (Wh)", deviceName, 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "1_total_active_energy_returned", "Total Phase 1 Active Energy Returned to the grid (Wh)", deviceName, 
                     () => device.TotalActiveEnergyReturnedPhase1.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
@@ -174,7 +174,7 @@ internal static class Program
 
             if (!device.IsTotalActiveEnergyReturnedPhase2Ignored)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "1_total_active_energy_returned", "Total Phase 2 Active Energy Returned to the grid (Wh)", deviceName, 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "2_total_active_energy_returned", "Total Phase 2 Active Energy Returned to the grid (Wh)", deviceName, 
                     () => device.TotalActiveEnergyReturnedPhase2.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
