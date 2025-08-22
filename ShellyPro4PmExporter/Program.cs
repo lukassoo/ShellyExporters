@@ -55,7 +55,8 @@ internal static class Program
         {
             Config<TargetDevice> config = new()
             {
-                listenPort = defaultPort
+                listenPort = defaultPort,
+                useOldIncorrectMetricNames = false
             };
 
             TargetMeter[] targetMeters =
