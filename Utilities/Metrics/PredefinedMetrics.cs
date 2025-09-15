@@ -56,7 +56,7 @@ public static class PredefinedMetrics
     
     public static IMetric CreatePhaseEnergyReturnedMetric(string targetName, string deviceModel, int phase, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_returned_total_wh", "Total Energy Returned to the grid (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateGauge("shelly_energy_returned_total_wh", "Total Energy Returned (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [phase.ToString()]);
     }
     
@@ -68,7 +68,7 @@ public static class PredefinedMetrics
     
     public static IMetric CreatePhaseTotalActiveEnergyReturnedMetric(string targetName, string deviceModel, int phase, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_active_returned_total_wh", "Total Active Energy Returned to the grid (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateGauge("shelly_energy_active_returned_total_wh", "Total Active Energy Returned (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [phase.ToString()]);
     }
     
@@ -141,7 +141,7 @@ public static class PredefinedMetrics
 
     public static IMetric CreateTotalActiveEnergyReturnedMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_active_returned_total_wh", "Total Active Energy returned to the grid (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateGauge("shelly_energy_active_returned_total_wh", "Total Active Energy Returned (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
     }
     
