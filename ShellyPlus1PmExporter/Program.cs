@@ -86,17 +86,90 @@ internal static class Program
     static void SetupMetrics(bool oldIncorrectMetricNames)
     {
         log.Information("Setting up metrics");
+
+        if (oldIncorrectMetricNames)
+        {
+            SetupDevicesWithOldNaming();
+            return;
+        }
         
         foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             ShellyPlus1PmConnection device = (ShellyPlus1PmConnection)deviceConnection;
             
+            string targetName = device.GetTargetName();
+            const string deviceModel = "Plus1Pm";
+            
+            if (!device.IgnoreTotalPower)
+            {
+                IMetric totalEnergyMetric = PredefinedMetrics.CreateTotalEnergyMetric(targetName, deviceModel, () => device.TotalPower);
+                deviceMetrics.Add(totalEnergyMetric);
+            }
+            
+            if (!device.IgnoreCurrentPower)
+            {
+                IMetric currentPowerMetric = PredefinedMetrics.CreatePowerMetric(targetName, deviceModel, () => device.CurrentlyUsedPower);
+                deviceMetrics.Add(currentPowerMetric);
+            }
+
+            if (!device.IgnoreVoltage)
+            {
+                IMetric voltageMetric = PredefinedMetrics.CreateVoltageMetric(targetName, deviceModel, () => device.Voltage);
+                deviceMetrics.Add(voltageMetric);
+            }
+            
+            if (!device.IgnoreCurrent)
+            {
+                IMetric currentMetric = PredefinedMetrics.CreateCurrentMetric(targetName, deviceModel, () => device.Current);
+                deviceMetrics.Add(currentMetric);
+            }
+            
+            if (!device.IgnoreTemperature)
+            {
+                IMetric temperatureMetric = PredefinedMetrics.CreateTemperatureMetric(targetName, deviceModel, () => device.Temperature);
+                deviceMetrics.Add(temperatureMetric);
+            }
+
+            if (!device.IgnoreOutputState)
+            {
+                IMetric outputStateMetric = PredefinedMetrics.CreateRelayStateMetric(targetName, deviceModel, () => device.OutputState);
+                deviceMetrics.Add(outputStateMetric);
+            }
+
+            if (!device.IgnoreInputState)
+            {
+                IMetric inputStateMetric = PredefinedMetrics.CreateInputStateMetric(targetName, deviceModel, () => device.InputState);
+                deviceMetrics.Add(inputStateMetric);
+            }
+            
+            if (!device.IgnoreInputPercent)
+            {
+                IMetric inputPercentMetric = PredefinedMetrics.CreateInputPercentMetric(targetName, deviceModel, () => device.InputPercent);
+                deviceMetrics.Add(inputPercentMetric);
+            }
+            
+            if (!device.IgnoreInputCountTotal)
+            {
+                IMetric inputCountTotalMetric = PredefinedMetrics.CreateInputCountTotalMetric(targetName, deviceModel, () => device.InputCountTotal);
+                deviceMetrics.Add(inputCountTotalMetric);
+            }
+            
+            if (!device.IgnoreInputFrequency)
+            {
+                IMetric inputFrequencyMetric = PredefinedMetrics.CreateInputFrequencyMetric(targetName, deviceModel, () => device.InputFrequency);
+                deviceMetrics.Add(inputFrequencyMetric);
+            }
+        }
+    }
+
+    static void SetupDevicesWithOldNaming()
+    {
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        {
+            ShellyPlus1PmConnection device = (ShellyPlus1PmConnection)deviceConnection;
+            
             string deviceName = device.GetTargetName();
-            
-            string oldMetricPrefix = "shellyPlus1Pm_" + deviceName + "_";
-            const string newMetricPrefix = "shellyPlus1Pm_";
-            
-            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            string metricPrefix = "shellyPlus1Pm_" + deviceName + "_";
             
             if (!device.IgnoreTotalPower)
             {

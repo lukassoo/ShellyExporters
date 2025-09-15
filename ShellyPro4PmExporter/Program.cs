@@ -94,16 +94,90 @@ internal static class Program
 
     static void SetupMetrics(bool oldIncorrectMetricNames)
     {
+        log.Information("Setting up metrics");
+        
+        if (oldIncorrectMetricNames)
+        {
+            SetupDevicesWithOldNaming();
+            return;
+        }
+        
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        {
+            ShellyPro4PmConnection device = (ShellyPro4PmConnection)deviceConnection;
+            
+            string targetName = device.GetTargetName();
+            const string deviceModel = "Pro4Pm";
+
+            MeterReading[] meterReadings = device.GetCurrentMeterReadings();
+
+            foreach (MeterReading meterReading in meterReadings)
+            {
+                if (!meterReading.currentIgnored)
+                {
+                    IMetric currentMetric = PredefinedMetrics.CreatePhaseCurrentMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.current);
+                    deviceMetrics.Add(currentMetric);
+                }
+
+                if (!meterReading.voltageIgnored)
+                {
+                    IMetric voltageMetric = PredefinedMetrics.CreatePhaseVoltageMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.voltage);
+                    deviceMetrics.Add(voltageMetric);
+                }
+
+                if (!meterReading.activePowerIgnored)
+                {
+                    IMetric powerMetric = PredefinedMetrics.CreatePhaseActivePowerMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.activePower);
+                    deviceMetrics.Add(powerMetric);
+                }
+
+                if (!meterReading.powerFactorIgnored)
+                {
+                    IMetric powerFactorMetric = PredefinedMetrics.CreatePhasePowerFactorMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.powerFactor);
+                    deviceMetrics.Add(powerFactorMetric);
+                }
+
+                if (!meterReading.frequencyIgnored)
+                {
+                    IMetric frequencyMetric = PredefinedMetrics.CreatePhaseFrequencyMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.frequency);
+                    deviceMetrics.Add(frequencyMetric);
+                }
+
+                if (!meterReading.totalActiveEnergyIgnored)
+                {
+                    IMetric totalMetric = PredefinedMetrics.CreatePhaseTotalActiveEnergyMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.totalActiveEnergy);
+                    deviceMetrics.Add(totalMetric);
+                }
+
+                if (!meterReading.totalReturnedActiveEnergyIgnored)
+                {
+                    IMetric totalReturnedMetric = PredefinedMetrics.CreatePhaseTotalActiveEnergyReturnedMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.totalReturnedActiveEnergy);
+                    deviceMetrics.Add(totalReturnedMetric);
+                }
+
+                if (!meterReading.temperatureIgnored)
+                {
+                    IMetric temperatureMetric = PredefinedMetrics.CreatePhaseTemperatureMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.temperature);
+                    deviceMetrics.Add(temperatureMetric);
+                }
+
+                if (!meterReading.outputIgnored)
+                {
+                    IMetric outputMetric = PredefinedMetrics.CreatePhaseRelayStateMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.output);
+                    deviceMetrics.Add(outputMetric);
+                }
+            }
+        }
+    }
+
+    static void SetupDevicesWithOldNaming()
+    {
         foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             ShellyPro4PmConnection device = (ShellyPro4PmConnection)deviceConnection;
             
             string deviceName = device.GetTargetName();
-            
-            string oldMetricPrefix = "shellyPro4Pm_" + deviceName + "_";
-            const string newMetricPrefix = "shellyPro4Pm_";
-            
-            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            string metricPrefix = "shellyPro4Pm_" + deviceName + "_";
 
             MeterReading[] meterReadings = device.GetCurrentMeterReadings();
 

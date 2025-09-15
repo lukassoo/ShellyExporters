@@ -87,16 +87,77 @@ internal static class Program
     {
         log.Information("Setting up metrics");
 
+        if (oldIncorrectMetricNames)
+        {
+            SetupDevicesWithOldNaming();
+            return;
+        }
+        
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        {
+            ShellyPlusPmMiniConnection device = (ShellyPlusPmMiniConnection)deviceConnection;
+            
+            string targetName = device.GetTargetName();
+            const string deviceModel = "PlusPmMini";
+            
+            if (!device.IgnoreTotalPower)
+            {
+                IMetric totalEnergyMetric = PredefinedMetrics.CreateTotalEnergyMetric(targetName, deviceModel, () => device.TotalPower);
+                deviceMetrics.Add(totalEnergyMetric);
+            }
+            
+            if (!device.IgnoreCurrentPower)
+            {
+                IMetric currentPowerMetric = PredefinedMetrics.CreatePowerMetric(targetName, deviceModel, () => device.CurrentlyUsedPower);
+                deviceMetrics.Add(currentPowerMetric);
+            }
+
+            if (!device.IgnoreVoltage)
+            {
+                IMetric voltageMetric = PredefinedMetrics.CreateVoltageMetric(targetName, deviceModel, () => device.Voltage);
+                deviceMetrics.Add(voltageMetric);
+            }
+            
+            if (!device.IgnoreCurrent)
+            {
+                IMetric currentMetric = PredefinedMetrics.CreateCurrentMetric(targetName, deviceModel, () => device.Current);
+                deviceMetrics.Add(currentMetric);
+            }
+
+            if (!device.IgnoreInputState)
+            {
+                IMetric inputStateMetric = PredefinedMetrics.CreateInputStateMetric(targetName, deviceModel, () => device.InputState);
+                deviceMetrics.Add(inputStateMetric);
+            }
+            
+            if (!device.IgnoreInputPercent)
+            {
+                IMetric inputPercentMetric = PredefinedMetrics.CreateInputPercentMetric(targetName, deviceModel, () => device.InputPercent);
+                deviceMetrics.Add(inputPercentMetric);
+            }
+            
+            if (!device.IgnoreInputCountTotal)
+            {
+                IMetric inputCountTotalMetric = PredefinedMetrics.CreateInputCountTotalMetric(targetName, deviceModel, () => device.InputCountTotal);
+                deviceMetrics.Add(inputCountTotalMetric);
+            }
+            
+            if (!device.IgnoreInputFrequency)
+            {
+                IMetric inputFrequencyMetric = PredefinedMetrics.CreateInputFrequencyMetric(targetName, deviceModel, () => device.InputFrequency);
+                deviceMetrics.Add(inputFrequencyMetric);
+            }
+        }
+    }
+
+    static void SetupDevicesWithOldNaming()
+    {
         foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             ShellyPlusPmMiniConnection device = (ShellyPlusPmMiniConnection)deviceConnection;
             
             string deviceName = device.GetTargetName();
-            
-            string oldMetricPrefix = "shellypluspmmini_" + deviceName + "_";
-            const string newMetricPrefix = "shellypluspmmini_";
-            
-            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            string metricPrefix = "shellypluspmmini_" + deviceName + "_";
             
             if (!device.IgnoreTotalPower)
             {

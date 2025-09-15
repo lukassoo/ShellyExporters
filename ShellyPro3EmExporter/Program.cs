@@ -93,6 +93,8 @@ internal static class Program
 
     static void SetupMetrics(bool oldIncorrectMetricNames)
     {
+        log.Information("Setting up metrics");
+        
         if (oldIncorrectMetricNames)
         {
             SetupDevicesWithOldNaming();
@@ -104,10 +106,7 @@ internal static class Program
             ShellyPro3EmConnection device = (ShellyPro3EmConnection)deviceConnection;
             
             string targetName = device.GetTargetName();
-            
-            const string metricPrefix = "shelly_";
             const string deviceModel = "Pro3Em";
-            string[] phaseLabel = ["phase"];
             
             MeterReading[] meterReadings = device.GetCurrentMeterReadings();
 
@@ -115,162 +114,98 @@ internal static class Program
             {
                 if (!meterReading.currentIgnored)
                 {
-                    const string metricName = metricPrefix + "current_amps";
-                    
-                    IMetric currentMetric = MetricsHelper.CreateGauge(metricName, "Current (A)", targetName, deviceModel,
-                        () => meterReading.current.ToString("0.000", CultureInfo.InvariantCulture), phaseLabel, [meterReading.meterIndex.ToString()]);
-                    
+                    IMetric currentMetric = PredefinedMetrics.CreatePhaseCurrentMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.current);
                     deviceMetrics.Add(currentMetric);
                 }
                 
                 if (!meterReading.voltageIgnored)
                 {
-                    const string metricName = metricPrefix + "voltage_volts";
-                    
-                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricName, "Voltage (V)", targetName, deviceModel,
-                        () => meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [meterReading.meterIndex.ToString()]);
-                    
+                    IMetric voltageMetric = PredefinedMetrics.CreatePhaseVoltageMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.voltage);
                     deviceMetrics.Add(voltageMetric);
                 }
                 
                 if (!meterReading.activePowerIgnored)
                 {
-                    const string metricName = metricPrefix + "power_active_watts";   
-                    
-                    IMetric powerMetric = MetricsHelper.CreateGauge(metricName, "Active Power (W)", targetName, deviceModel,
-                        () => meterReading.activePower.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [meterReading.meterIndex.ToString()]);
-                    
+                    IMetric powerMetric = PredefinedMetrics.CreatePhaseActivePowerMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.activePower);
                     deviceMetrics.Add(powerMetric);
                 }
                 
                 if (!meterReading.apparentPowerIgnored)
                 {
-                    const string metricName = metricPrefix + "power_apparent_va";
-                    
-                    IMetric apparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Apparent Power (VA)", targetName, deviceModel,
-                        () => meterReading.apparentPower.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [meterReading.meterIndex.ToString()]);
-                    
+                    IMetric apparentPowerMetric = PredefinedMetrics.CreatePhaseApparentPowerMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.apparentPower);
                     deviceMetrics.Add(apparentPowerMetric);
                 }
                 
                 if (!meterReading.powerFactorIgnored)
                 {
-                    const string metricName = metricPrefix + "power_factor";
-                    
-                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(metricName, "Power Factor", targetName, deviceModel,
-                        () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [meterReading.meterIndex.ToString()]);
-                    
+                    IMetric powerFactorMetric = PredefinedMetrics.CreatePhasePowerFactorMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.powerFactor);
                     deviceMetrics.Add(powerFactorMetric);
                 }
             }
             
             if (!device.IsTotalCurrentIgnored)
             {
-                const string metricName = metricPrefix + "current_total_amps";
-                
-                IMetric totalCurrentMetric = MetricsHelper.CreateGauge(metricName, "Total Current (A)", targetName, deviceModel,
-                    () => device.TotalCurrent.ToString("0.000", CultureInfo.InvariantCulture));
-                
+                IMetric totalCurrentMetric = PredefinedMetrics.CreateTotalCurrentMetric(targetName, deviceModel, () => device.TotalCurrent);
                 deviceMetrics.Add(totalCurrentMetric);
             }
                             
             if (!device.IsTotalActivePowerIgnored)
             {
-                const string metricName = metricPrefix + "power_active_total_watts";   
-                
-                IMetric totalActivePowerMetric = MetricsHelper.CreateGauge(metricName, "Total Active Power (W)", targetName, deviceModel,
-                    () => device.TotalActivePower.ToString("0.00", CultureInfo.InvariantCulture));
-                
+                IMetric totalActivePowerMetric = PredefinedMetrics.CreateTotalActivePowerMetric(targetName, deviceModel, () => device.TotalActivePower);
                 deviceMetrics.Add(totalActivePowerMetric);
             }
                 
             if (!device.IsTotalApparentPowerIgnored)
             {
-                const string metricName = metricPrefix + "power_apparent_total_va";
-                
-                IMetric totalApparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Total Apparent Power (VA)", targetName, deviceModel,
-                    () => device.TotalApparentPower.ToString("0.00", CultureInfo.InvariantCulture));
-                
+                IMetric totalApparentPowerMetric = PredefinedMetrics.CreateTotalApparentPowerMetric(targetName, deviceModel, () => device.TotalApparentPower);
                 deviceMetrics.Add(totalApparentPowerMetric);
             }
 
             if (!device.IsTotalActiveEnergyIgnored)
             {
-                const string metricName = metricPrefix + "energy_active_total_wh";   
-                
-                IMetric totalActiveEnergyMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergy.ToString("0.00", CultureInfo.InvariantCulture));
-                
+                IMetric totalActiveEnergyMetric = PredefinedMetrics.CreateTotalActiveEnergyMetric(targetName, deviceModel, () => device.TotalActiveEnergy);
                 deviceMetrics.Add(totalActiveEnergyMetric);
             }
             
             if (!device.IsTotalActiveEnergyReturnedIgnored)
             {
-                const string metricName = metricPrefix + "energy_active_returned_total_wh";
-                
-                IMetric totalActiveEnergyReturnedMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy Returned to the grid (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyReturned.ToString("0.00", CultureInfo.InvariantCulture));
-                
+                IMetric totalActiveEnergyReturnedMetric = PredefinedMetrics.CreateTotalActiveEnergyReturnedMetric(targetName, deviceModel, () => device.TotalActiveEnergyReturned);
                 deviceMetrics.Add(totalActiveEnergyReturnedMetric);
             }
 
             if (!device.IsTotalActiveEnergyPhase1Ignored)
             {
-                const string metricName = metricPrefix + "energy_active_total_wh";   
-                
-                IMetric totalActiveEnergyPhase1Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 1 Active Energy (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyPhase1.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, ["1"]);
-                
+                IMetric totalActiveEnergyPhase1Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyMetric(targetName, deviceModel, 1, () => device.TotalActiveEnergyPhase1);
                 deviceMetrics.Add(totalActiveEnergyPhase1Metric);
             }
             
             if (!device.IsTotalActiveEnergyPhase2Ignored)
             {
-                const string metricName = metricPrefix + "energy_active_total_wh";
-                
-                IMetric totalActiveEnergyPhase2Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 2 Active Energy (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyPhase2.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, ["2"]);
-                
+                IMetric totalActiveEnergyPhase2Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyMetric(targetName, deviceModel, 2, () => device.TotalActiveEnergyPhase2);
                 deviceMetrics.Add(totalActiveEnergyPhase2Metric);
             }
             
             if (!device.IsTotalActiveEnergyPhase3Ignored)
             {
-                const string metricName = metricPrefix + "energy_active_total_wh";
-                
-                IMetric totalActiveEnergyPhase3Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 3 Active Energy (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyPhase3.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, ["3"]);
-                
+                IMetric totalActiveEnergyPhase3Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyMetric(targetName, deviceModel, 3, () => device.TotalActiveEnergyPhase3);
                 deviceMetrics.Add(totalActiveEnergyPhase3Metric);
             }
             
             if (!device.IsTotalActiveEnergyReturnedPhase1Ignored)
             {
-                const string metricName = metricPrefix + "energy_active_returned_total_wh";  
-                
-                IMetric totalActiveEnergyReturnedPhase1Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 1 Active Energy Returned to the grid (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyReturnedPhase1.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, ["1"]);
-                
+                IMetric totalActiveEnergyReturnedPhase1Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyReturnedMetric(targetName, deviceModel, 1, () => device.TotalActiveEnergyReturnedPhase1);
                 deviceMetrics.Add(totalActiveEnergyReturnedPhase1Metric);
             }
             
             if (!device.IsTotalActiveEnergyReturnedPhase2Ignored)
             {
-                const string metricName = metricPrefix + "energy_active_returned_total_wh"; 
-                
-                IMetric totalActiveEnergyReturnedPhase2Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 2 Active Energy Returned to the grid (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyReturnedPhase2.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, ["2"]);
-                
+                IMetric totalActiveEnergyReturnedPhase2Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyReturnedMetric(targetName, deviceModel, 2, () => device.TotalActiveEnergyReturnedPhase2);
                 deviceMetrics.Add(totalActiveEnergyReturnedPhase2Metric);
             }
             
             if (!device.IsTotalActiveEnergyReturnedPhase3Ignored)
             {
-                const string metricName = metricPrefix + "energy_active_returned_total_wh";
-                
-                IMetric totalActiveEnergyReturnedPhase3Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 3 Active Energy Returned to the grid (Wh)", targetName, deviceModel,
-                    () => device.TotalActiveEnergyReturnedPhase3.ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, ["3"]);
-                
+                IMetric totalActiveEnergyReturnedPhase3Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyReturnedMetric(targetName, deviceModel, 3, () => device.TotalActiveEnergyReturnedPhase3);
                 deviceMetrics.Add(totalActiveEnergyReturnedPhase3Metric);
             }
         }

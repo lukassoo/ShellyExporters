@@ -64,9 +64,9 @@ public class Shelly3EmConnection : IDeviceConnection
         return meterReadings;
     }
     
-    public string IsRelayOnAsString()
+    public bool IsRelayOn()
     {
-        return relayStatus ? "1" : "0";
+        return relayStatus;
     }
     
     public async Task<bool> UpdateMetricsIfNecessary()

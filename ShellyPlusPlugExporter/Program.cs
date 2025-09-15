@@ -87,16 +87,65 @@ internal static class Program
     {
         log.Information("Setting up metrics");
 
+        if (oldIncorrectMetricNames)
+        {
+            SetupDevicesWithOldNaming();
+            return;
+        }
+
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        {
+            ShellyPlusPlugConnection device = (ShellyPlusPlugConnection)deviceConnection;
+            
+            string targetName = device.GetTargetName();
+            const string deviceModel = "PlusPlug";
+            
+            if (!device.IgnoreTotalPower)
+            {
+                IMetric totalEnergyMetric = PredefinedMetrics.CreateTotalEnergyMetric(targetName, deviceModel, () => device.TotalPower);
+                deviceMetrics.Add(totalEnergyMetric);
+            }
+            
+            if (!device.IgnoreCurrentPower)
+            {
+                IMetric currentPowerMetric = PredefinedMetrics.CreatePowerMetric(targetName, deviceModel, () => device.CurrentlyUsedPower);
+                deviceMetrics.Add(currentPowerMetric);
+            }
+
+            if (!device.IgnoreVoltage)
+            {
+                IMetric voltageMetric = PredefinedMetrics.CreateVoltageMetric(targetName, deviceModel, () => device.Voltage);
+                deviceMetrics.Add(voltageMetric);
+            }
+            
+            if (!device.IgnoreCurrent)
+            {
+                IMetric currentMetric = PredefinedMetrics.CreateCurrentMetric(targetName, deviceModel, () => device.Current);
+                deviceMetrics.Add(currentMetric);
+            }
+            
+            if (!device.IgnoreTemperature)
+            {
+                IMetric temperatureMetric = PredefinedMetrics.CreateTemperatureMetric(targetName, deviceModel, () => device.Temperature);
+                deviceMetrics.Add(temperatureMetric);
+            }
+
+            if (!device.IgnoreRelayState)
+            {
+                IMetric relayStateMetric = PredefinedMetrics.CreateRelayStateMetric(targetName, deviceModel, () => device.RelayStatus);
+                deviceMetrics.Add(relayStateMetric);
+            }
+        }
+    }
+
+    static void SetupDevicesWithOldNaming()
+    {
         foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             ShellyPlusPlugConnection device = (ShellyPlusPlugConnection)deviceConnection;
             
             string deviceName = device.GetTargetName();
-            
-            string oldMetricPrefix = "shellyplusplug_" + deviceName + "_";
-            const string newMetricPrefix = "shellyplusplug_";
-            
-            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            string metricPrefix = "shellyplusplug_" + deviceName + "_";
             
             if (!device.IgnoreTotalPower)
             {

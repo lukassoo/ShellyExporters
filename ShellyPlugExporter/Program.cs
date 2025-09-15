@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using System.Globalization;
+using Serilog;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
@@ -86,22 +87,53 @@ internal static class Program
     static void SetupMetrics(bool oldIncorrectMetricNames)
     {
         log.Information("Setting up metrics");
+        
+        if (oldIncorrectMetricNames)
+        {
+            SetupDevicesWithOldNaming();
+            return;
+        }
 
         foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             ShellyPlugConnection device = (ShellyPlugConnection)deviceConnection;
             
+            string targetName = device.GetTargetName();
+            const string deviceModel = "Plug";
+            
+            if (!device.IgnoreCurrentPower)
+            {
+                IMetric powerMetric = PredefinedMetrics.CreatePowerMetric(targetName, deviceModel, () => device.CurrentlyUsedPower);
+                deviceMetrics.Add(powerMetric);
+            }
+
+            if (!device.IgnoreTemperature)
+            {
+                IMetric temperatureMetric = PredefinedMetrics.CreateTemperatureMetric(targetName, deviceModel, () => device.Temperature);
+                deviceMetrics.Add(temperatureMetric);
+            }
+
+            if (!device.IgnoreRelayState)
+            {
+                IMetric relayStateMetric = PredefinedMetrics.CreateRelayStateMetric(targetName, deviceModel, () => device.RelayStatus);
+                deviceMetrics.Add(relayStateMetric);
+            }
+        }
+    }
+
+    static void SetupDevicesWithOldNaming()
+    {
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        {
+            ShellyPlugConnection device = (ShellyPlugConnection)deviceConnection;
+            
             string deviceName = device.GetTargetName();
-            
-            string oldMetricPrefix = "shellyPlug_" + deviceName + "_";
-            const string newMetricPrefix = "shellyPlug_";
-            
-            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            string metricPrefix = "shellyPlug_" + deviceName + "_";
             
             if (!device.IgnoreCurrentPower)
             {
                 IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing through the plug in watts", deviceName,
-                    () => device.CurrentlyUsedPower.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+                    () => device.CurrentlyUsedPower.ToString("F2", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
             }
@@ -109,7 +141,7 @@ internal static class Program
             if (!device.IgnoreTemperature)
             {
                 IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "temperature", "The internal device temperature", deviceName, 
-                    () => device.Temperature.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+                    () => device.Temperature.ToString("F2", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
             }

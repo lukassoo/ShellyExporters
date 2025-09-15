@@ -94,20 +94,83 @@ internal static class Program
 
     static void SetupMetrics(bool oldIncorrectMetricNames)
     {
+        log.Information("Setting up metrics");
+        
+        if (oldIncorrectMetricNames)
+        {
+            SetupDevicesWithOldNaming();
+            return;
+        }
+        
         foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
             Shelly3EmConnection device = (Shelly3EmConnection)deviceConnection;
             
-            string deviceName = device.GetTargetName();
-            
-            string oldMetricPrefix = "shelly3em_" + deviceName + "_";
-            const string newMetricPrefix = "shelly3em_";
-            
-            string metricPrefix = oldIncorrectMetricNames ? oldMetricPrefix : newMetricPrefix;
+            string targetName = device.GetTargetName();
+            const string deviceModel = "3Em";
             
             if (!device.IsRelayStateIgnored)
             {
-                IMetric relayStateMetric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "Relay State", deviceName, device.IsRelayOnAsString);
+                IMetric relayStateMetric = PredefinedMetrics.CreateRelayStateMetric(targetName, deviceModel, () => device.IsRelayOn());
+                deviceMetrics.Add(relayStateMetric);
+            }
+            
+            MeterReading[] meterReadings = device.GetCurrentMeterReadings();
+
+            foreach (MeterReading meterReading in meterReadings)
+            {
+                if (!meterReading.powerIgnored)
+                {
+                    IMetric powerMetric = PredefinedMetrics.CreatePhasePowerMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.power);
+                    deviceMetrics.Add(powerMetric);
+                }
+
+                if (!meterReading.currentIgnored)
+                {
+                    IMetric currentMetric = PredefinedMetrics.CreatePhaseCurrentMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.current);
+                    deviceMetrics.Add(currentMetric);
+                }
+                
+                if (!meterReading.voltageIgnored)
+                {
+                    IMetric voltageMetric = PredefinedMetrics.CreatePhaseVoltageMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.voltage);
+                    deviceMetrics.Add(voltageMetric);
+                }
+                
+                if (!meterReading.powerFactorIgnored)
+                {
+                    IMetric powerFactorMetric = PredefinedMetrics.CreatePhasePowerFactorMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.powerFactor);
+                    deviceMetrics.Add(powerFactorMetric);
+                }
+                
+                if (!meterReading.totalIgnored)
+                {
+                    IMetric totalEnergyMetric = PredefinedMetrics.CreatePhaseEnergyTotalMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.total);
+                    deviceMetrics.Add(totalEnergyMetric);
+                }
+                
+                if (!meterReading.totalReturnedIgnored)
+                {
+                    IMetric totalReturnedEnergyMetric = PredefinedMetrics.CreatePhaseEnergyReturnedMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.totalReturned);
+                    deviceMetrics.Add(totalReturnedEnergyMetric);
+                }
+            }
+        }
+    }
+    
+    static void SetupDevicesWithOldNaming()
+    {
+        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        {
+            Shelly3EmConnection device = (Shelly3EmConnection)deviceConnection;
+                
+            string deviceName = device.GetTargetName();
+
+            string metricPrefix = "shelly3em_" + deviceName + "_";
+            
+            if (!device.IsRelayStateIgnored)
+            {
+                IMetric relayStateMetric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "Relay State", deviceName, () => device.IsRelayOn() ? "1" : "0");
                 
                 deviceMetrics.Add(relayStateMetric);
             }
