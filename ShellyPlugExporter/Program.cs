@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using NuGet.Versioning;
 using Serilog;
 using Utilities;
 using Utilities.Configs;
@@ -10,6 +11,9 @@ namespace ShellyPlugExporter;
 internal static class Program
 {
     static ILogger log = null!;
+    
+    public static SemanticVersion CurrentVersion { get; } = SemanticVersion.Parse("1.0.0");
+    public static DateTime BuildTime { get; } = DateTime.UtcNow;
     
     const string configName = "shellyPlugExporter";
     const int defaultPort = 9918;
@@ -27,7 +31,7 @@ internal static class Program
                 return;
             }
             
-            RuntimeAutomation.Init(config);
+            RuntimeAutomation.Init(config, CurrentVersion, BuildTime);
             log = Log.ForContext(typeof(Program));
 
             listenPort = config.listenPort;

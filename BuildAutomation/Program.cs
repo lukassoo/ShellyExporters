@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using CliWrap;
+using NuGet.Versioning;
 using Serilog;
 using Utilities.Logging;
 
@@ -15,13 +16,17 @@ internal static class Program
 {
     static ILogger log = null!;
 
+    static readonly SemanticVersion version = SemanticVersion.Parse("1.5.0");
+    static readonly DateTime buildTime = DateTime.UtcNow;
+    
     static List<string> tagNames = ["armv7", "armv8", "latest"];
-    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", "ShellyProEmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter", "ShellyPro4PmExporter"];
+    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", 
+                                        "ShellyProEmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter", "ShellyPro4PmExporter"];
     
     // static List<string> tagNames = ["development"];
-    // static List<string> projectNames = ["ShellyProEmExporter"];
+    // static List<string> projectNames = ["ShellyPro3EmExporter"];
 
-    const bool pushImages = false;
+    const bool pushImages = true;
     
     static Dictionary<string, string> imageNames = new()
     {
@@ -52,6 +57,8 @@ internal static class Program
         {"development", "linux/amd64"}
     };
     
+    static readonly Dictionary<string, string> versionFileOriginalContentMap = new();
+    
     static async Task Main(string[] args)
     {
         LogSystem.Init(false, "Information");
@@ -77,6 +84,8 @@ internal static class Program
             }
          
             string projectName = projectDirectory.Name;
+
+            await UpdateProjectVersionFileForBuild(projectDirectory);
             
             if (!await PublishProject(projectDirectory))
             {
@@ -84,6 +93,8 @@ internal static class Program
                 continue;
             }
 
+            await RestoreProjectVersionFile(projectDirectory);
+            
             if (!await BuildImages(projectDirectory, pushImages))
             {
                 log.Error("Failed to build project images: {projectName}", projectName);
@@ -124,6 +135,61 @@ internal static class Program
             return false;
         }
     }
+    
+    static async Task UpdateProjectVersionFileForBuild(DirectoryInfo projectDirectory)
+    {
+        string projectName = projectDirectory.Name;
+        FileInfo fileContainingVersion = new(Path.Combine(projectDirectory.FullName, "Program.cs"));
+        bool fileContainingVersionExists = fileContainingVersion.Exists;
+        
+        // Updating application version string to the release version
+        if (fileContainingVersionExists)
+        {
+            string originalContents = await File.ReadAllTextAsync(fileContainingVersion.FullName);
+            string newFileContents = originalContents;
+            bool fileUpdated = false;
+            
+            if (originalContents.Contains("public static SemanticVersion CurrentVersion { get; } = SemanticVersion.Parse(\"1.0.0\");"))
+            {
+                newFileContents = originalContents.Replace("public static SemanticVersion CurrentVersion { get; } = SemanticVersion.Parse(\"1.0.0\");", 
+                                                           "public static SemanticVersion CurrentVersion { get; } = SemanticVersion.Parse(\"" + version + "\");");
+                fileUpdated = true;
+            }
+
+            if (newFileContents.Contains("DateTime BuildTime { get; } = DateTime.UtcNow;"))
+            {
+                string buildTimeString = buildTime.ToString("u");
+                
+                newFileContents = newFileContents.Replace("DateTime BuildTime { get; } = DateTime.UtcNow;", 
+                                                          "DateTime BuildTime { get; } = DateTime.Parse(\"" + buildTimeString + "\");");
+                
+                fileUpdated = true;
+            }
+
+            if (fileUpdated)
+            {
+                await File.WriteAllTextAsync(fileContainingVersion.FullName, newFileContents);
+                if (!versionFileOriginalContentMap.TryAdd(projectName, originalContents))
+                {
+                    log.Warning("Failed to add original contents");
+                }
+            }
+        }
+    }
+
+    static async Task RestoreProjectVersionFile(DirectoryInfo projectDirectory)
+    {
+        string projectName = projectDirectory.Name;
+
+        FileInfo fileContainingVersion = new(Path.Combine(projectDirectory.FullName, "Program.cs"));
+        
+        if (fileContainingVersion.Exists && versionFileOriginalContentMap.TryGetValue(projectName, out string? originalContents))
+        {
+            await File.WriteAllTextAsync(fileContainingVersion.FullName, originalContents);
+            
+            versionFileOriginalContentMap.Remove(projectName);
+        }
+    }
 
     static async Task<bool> BuildImages(DirectoryInfo projectDirectory, bool push = false)
     {
@@ -137,7 +203,6 @@ internal static class Program
         }
 
         string baseDockerFile = await File.ReadAllTextAsync(dockerFilePath);
-        
         
         foreach (string tagName in tagNames)
         {
