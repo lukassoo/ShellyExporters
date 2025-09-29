@@ -174,7 +174,7 @@ internal static class Program
             
             if (!device.IsRelayStateIgnored)
             {
-                IMetric relayStateMetric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "Relay State", deviceName, () => device.IsRelayOn() ? "1" : "0");
+                IMetric relayStateMetric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "Relay State", () => device.IsRelayOn() ? "1" : "0");
                 
                 deviceMetrics.Add(relayStateMetric);
             }
@@ -185,7 +185,7 @@ internal static class Program
             {
                 if (!meterReading.powerIgnored)
                 {
-                    IMetric powerMetric = MetricsHelper.CreateGauge(metricPrefix + "power", "Power (W)", deviceName, 
+                    IMetric powerMetric = MetricsHelper.CreateGauge(metricPrefix + "power", "Power (W)", 
                         () => meterReading.power.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerMetric);
@@ -193,7 +193,7 @@ internal static class Program
 
                 if (!meterReading.currentIgnored)
                 {
-                    IMetric currentMetric = MetricsHelper.CreateGauge(metricPrefix + "current", "Current (A)", deviceName, 
+                    IMetric currentMetric = MetricsHelper.CreateGauge(metricPrefix + "current", "Current (A)", 
                         () => meterReading.current.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(currentMetric);
@@ -201,7 +201,7 @@ internal static class Program
                 
                 if (!meterReading.voltageIgnored)
                 {
-                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricPrefix + "voltage", "Voltage (V)", deviceName, 
+                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricPrefix + "voltage", "Voltage (V)", 
                         () => meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(voltageMetric);
@@ -209,7 +209,7 @@ internal static class Program
                 
                 if (!meterReading.powerFactorIgnored)
                 {
-                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(metricPrefix + "power_factor", "Power Factor", deviceName, 
+                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(metricPrefix + "power_factor", "Power Factor", 
                         () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerFactorMetric);
@@ -217,7 +217,7 @@ internal static class Program
                 
                 if (!meterReading.totalIgnored)
                 {
-                    IMetric totalMetric = MetricsHelper.CreateGauge(metricPrefix + "total_energy", "Total Energy (Wh)", deviceName, 
+                    IMetric totalMetric = MetricsHelper.CreateGauge(metricPrefix + "total_energy", "Total Energy (Wh)", 
                         () => meterReading.total.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(totalMetric);
@@ -225,7 +225,7 @@ internal static class Program
                 
                 if (!meterReading.totalReturnedIgnored)
                 {
-                    IMetric totalReturnedMetric = MetricsHelper.CreateGauge(metricPrefix + "total_energy_returned", "Total Energy returned to the grid (Wh)", deviceName, 
+                    IMetric totalReturnedMetric = MetricsHelper.CreateGauge(metricPrefix + "total_energy_returned", "Total Energy returned to the grid (Wh)", 
                         () => meterReading.totalReturned.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(totalReturnedMetric);

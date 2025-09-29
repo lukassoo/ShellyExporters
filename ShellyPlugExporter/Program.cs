@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using NuGet.Versioning;
 using Serilog;
 using Utilities;
@@ -132,11 +132,11 @@ internal static class Program
             ShellyPlugConnection device = (ShellyPlugConnection)deviceConnection;
             
             string deviceName = device.GetTargetName();
-            string metricPrefix = "shellyPlug_" + deviceName + "_";
+            string metricPrefix = "shellyplug_" + deviceName + "_";
             
             if (!device.IgnoreCurrentPower)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing through the plug in watts", deviceName,
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "currently_used_power", "The amount of power currently flowing through the plug in watts",
                     () => device.CurrentlyUsedPower.ToString("F2", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
@@ -144,7 +144,7 @@ internal static class Program
 
             if (!device.IgnoreTemperature)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "temperature", "The internal device temperature", deviceName, 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "temperature", "The internal device temperature",
                     () => device.Temperature.ToString("F2", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
@@ -152,7 +152,7 @@ internal static class Program
 
             if (!device.IgnoreRelayState)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "The state of the relay", deviceName, 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "The state of the relay",
                     () => device.RelayStatus ? "1" : "0");
                 
                 deviceMetrics.Add(metric);

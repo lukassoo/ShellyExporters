@@ -233,7 +233,7 @@ internal static class Program
                 {
                     string metricName = oldMetricPrefix + meterReading.meterIndex + "_current";
                     
-                    IMetric currentMetric = MetricsHelper.CreateGauge(metricName, "Current (A)", deviceName, 
+                    IMetric currentMetric = MetricsHelper.CreateGauge(metricName, "Current (A)", 
                         () => meterReading.current.ToString("0.000", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(currentMetric);
@@ -243,7 +243,7 @@ internal static class Program
                 {
                     string metricName = oldMetricPrefix + meterReading.meterIndex + "_voltage";
                     
-                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricName, "Voltage (V)", deviceName, 
+                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricName, "Voltage (V)", 
                         () => meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(voltageMetric);
@@ -253,7 +253,7 @@ internal static class Program
                 {
                     string metricName = oldMetricPrefix + meterReading.meterIndex + "_active_power";   
                     
-                    IMetric powerMetric = MetricsHelper.CreateGauge(metricName, "Active Power (W)", deviceName, 
+                    IMetric powerMetric = MetricsHelper.CreateGauge(metricName, "Active Power (W)", 
                         () => meterReading.activePower.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerMetric);
@@ -263,7 +263,7 @@ internal static class Program
                 {
                     string metricName = oldMetricPrefix + meterReading.meterIndex + "_apparent_power";
                     
-                    IMetric apparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Apparent Power (VA)", deviceName, 
+                    IMetric apparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Apparent Power (VA)", 
                         () => meterReading.apparentPower.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(apparentPowerMetric);
@@ -271,7 +271,7 @@ internal static class Program
                 
                 if (!meterReading.powerFactorIgnored)
                 {
-                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(oldMetricPrefix + meterReading.meterIndex + "_power_factor", "Power Factor", deviceName, 
+                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(oldMetricPrefix + meterReading.meterIndex + "_power_factor", "Power Factor", 
                         () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerFactorMetric);
@@ -282,7 +282,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_current";
                 
-                IMetric totalCurrentMetric = MetricsHelper.CreateGauge(metricName, "Total Current (A)", deviceName, 
+                IMetric totalCurrentMetric = MetricsHelper.CreateGauge(metricName, "Total Current (A)", 
                     () => device.TotalCurrent.ToString("0.000", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalCurrentMetric);
@@ -292,7 +292,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_power";
                 
-                IMetric totalActivePowerMetric = MetricsHelper.CreateGauge(metricName, "Total Active Power (W)", deviceName, 
+                IMetric totalActivePowerMetric = MetricsHelper.CreateGauge(metricName, "Total Active Power (W)", 
                     () => device.TotalActivePower.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActivePowerMetric);
@@ -302,7 +302,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_apparent_power";
                 
-                IMetric totalApparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Total Apparent Power (VA)", deviceName, 
+                IMetric totalApparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Total Apparent Power (VA)", 
                     () => device.TotalApparentPower.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalApparentPowerMetric);
@@ -312,7 +312,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy";   
                 
-                IMetric totalActiveEnergyMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy (Wh)", deviceName, 
+                IMetric totalActiveEnergyMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy (Wh)", 
                     () => device.TotalActiveEnergy.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyMetric);
@@ -322,7 +322,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_returned";
                 
-                IMetric totalActiveEnergyReturnedMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy Returned to the grid (Wh)", deviceName, 
+                IMetric totalActiveEnergyReturnedMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy Returned to the grid (Wh)", 
                     () => device.TotalActiveEnergyReturned.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyReturnedMetric);
@@ -332,7 +332,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_phase_1";   
                 
-                IMetric totalActiveEnergyPhase1Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 1 Active Energy (Wh)", deviceName, 
+                IMetric totalActiveEnergyPhase1Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 1 Active Energy (Wh)", 
                     () => device.TotalActiveEnergyPhase1.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyPhase1Metric);
@@ -342,7 +342,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_phase_2";
                 
-                IMetric totalActiveEnergyPhase2Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 2 Active Energy (Wh)", deviceName, 
+                IMetric totalActiveEnergyPhase2Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 2 Active Energy (Wh)", 
                     () => device.TotalActiveEnergyPhase2.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyPhase2Metric);
@@ -352,7 +352,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_phase_3";
                 
-                IMetric totalActiveEnergyPhase3Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 3 Active Energy (Wh)", deviceName, 
+                IMetric totalActiveEnergyPhase3Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 3 Active Energy (Wh)", 
                     () => device.TotalActiveEnergyPhase3.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyPhase3Metric);
@@ -362,7 +362,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_returned_phase_1";  
                 
-                IMetric totalActiveEnergyReturnedPhase1Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 1 Active Energy Returned to the grid (Wh)", deviceName, 
+                IMetric totalActiveEnergyReturnedPhase1Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 1 Active Energy Returned to the grid (Wh)", 
                     () => device.TotalActiveEnergyReturnedPhase1.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyReturnedPhase1Metric);
@@ -372,7 +372,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_returned_phase_2"; 
                 
-                IMetric totalActiveEnergyReturnedPhase2Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 2 Active Energy Returned to the grid (Wh)", deviceName,
+                IMetric totalActiveEnergyReturnedPhase2Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 2 Active Energy Returned to the grid (Wh)",
                     () => device.TotalActiveEnergyReturnedPhase2.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyReturnedPhase2Metric);
@@ -382,7 +382,7 @@ internal static class Program
             {
                 string metricName = oldMetricPrefix + "total_active_energy_returned_phase_3";
                 
-                IMetric totalActiveEnergyReturnedPhase3Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 3 Active Energy Returned to the grid (Wh)", deviceName,
+                IMetric totalActiveEnergyReturnedPhase3Metric = MetricsHelper.CreateGauge(metricName, "Total Phase 3 Active Energy Returned to the grid (Wh)",
                     () => device.TotalActiveEnergyReturnedPhase3.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalActiveEnergyReturnedPhase3Metric);

@@ -7,6 +7,13 @@ namespace Utilities.Metrics;
 public static class MetricsHelper
 {
     static readonly ILogger log = Log.Logger.ForContext(typeof(MetricsHelper));
+
+    public static IMetric CreateGauge(string metricName, string helpString, Func<string> metricValueGetterFunction)
+    {
+        Gauge.Child gauge = Prometheus.Metrics.CreateGauge(metricName, helpString).WithLabels([]);
+        
+        return new GaugeMetric(gauge, metricValueGetterFunction);
+    }
     
     public static IMetric CreateGauge(string metricName, string helpString, string targetName, Func<string> metricValueGetterFunction, string[]? additionalLabels = null, string[]? labelValues = null)
     {

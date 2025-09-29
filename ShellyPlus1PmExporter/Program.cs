@@ -177,7 +177,7 @@ internal static class Program
             
             if (!device.IgnoreTotalPower)
             {
-                IMetric totalPowerMetric = MetricsHelper.CreateGauge(metricPrefix + "total_power", "The total power/energy consumed in Watt-hours", deviceName, 
+                IMetric totalPowerMetric = MetricsHelper.CreateGauge(metricPrefix + "total_power", "The total power/energy consumed in Watt-hours", 
                     () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(totalPowerMetric);
@@ -185,7 +185,7 @@ internal static class Program
             
             if (!device.IgnoreCurrentPower)
             {
-                IMetric currentPowerMetric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing in watts", deviceName, 
+                IMetric currentPowerMetric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing in watts", 
                     () => device.CurrentlyUsedPower.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(currentPowerMetric);
@@ -193,7 +193,7 @@ internal static class Program
 
             if (!device.IgnoreVoltage)
             {
-                IMetric voltageMetric = MetricsHelper.CreateGauge(metricPrefix + "voltage", "Voltage (V)", deviceName, 
+                IMetric voltageMetric = MetricsHelper.CreateGauge(metricPrefix + "voltage", "Voltage (V)", 
                     () => device.Voltage.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(voltageMetric);
@@ -201,7 +201,7 @@ internal static class Program
             
             if (!device.IgnoreCurrent)
             {
-                IMetric currentMetric = MetricsHelper.CreateGauge(metricPrefix + "current", "Current (A)", deviceName, 
+                IMetric currentMetric = MetricsHelper.CreateGauge(metricPrefix + "current", "Current (A)", 
                     () => device.Current.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(currentMetric);
@@ -209,7 +209,7 @@ internal static class Program
             
             if (!device.IgnoreTemperature)
             {
-                IMetric temperatureMetric = MetricsHelper.CreateGauge(metricPrefix + "temperature", "The internal device temperature in Celsius", deviceName, 
+                IMetric temperatureMetric = MetricsHelper.CreateGauge(metricPrefix + "temperature", "The internal device temperature in Celsius", 
                     () => device.Temperature.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(temperatureMetric);
@@ -217,7 +217,7 @@ internal static class Program
 
             if (!device.IgnoreOutputState)
             {
-                IMetric outputStateMetric = MetricsHelper.CreateGauge(metricPrefix + "output_state", "The state of the output", deviceName, 
+                IMetric outputStateMetric = MetricsHelper.CreateGauge(metricPrefix + "output_state", "The state of the output", 
                     () => device.OutputState ? "1" : "0");
                 
                 deviceMetrics.Add(outputStateMetric);
@@ -225,7 +225,7 @@ internal static class Program
 
             if (!device.IgnoreInputState)
             {
-                IMetric inputStateMetric = MetricsHelper.CreateGauge(metricPrefix + "input_state", "The state of the input", deviceName, 
+                IMetric inputStateMetric = MetricsHelper.CreateGauge(metricPrefix + "input_state", "The state of the input", 
                     () => device.InputState ? "1" : "0");
                 
                 deviceMetrics.Add(inputStateMetric);
@@ -233,7 +233,7 @@ internal static class Program
             
             if (!device.IgnoreInputPercent)
             {
-                IMetric inputPercentMetric = MetricsHelper.CreateGauge(metricPrefix + "input_percent", "Input analog value in percent", deviceName, 
+                IMetric inputPercentMetric = MetricsHelper.CreateGauge(metricPrefix + "input_percent", "Input analog value in percent", 
                     () => device.InputPercent.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(inputPercentMetric);
@@ -241,7 +241,7 @@ internal static class Program
             
             if (!device.IgnoreInputCountTotal)
             {
-                IMetric inputCountTotalMetric = MetricsHelper.CreateGauge(metricPrefix + "input_count", "Total pulses counted on the input", deviceName,
+                IMetric inputCountTotalMetric = MetricsHelper.CreateGauge(metricPrefix + "input_count", "Total pulses counted on the input",
                     () => device.InputCountTotal.ToString("D", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(inputCountTotalMetric);
@@ -249,7 +249,7 @@ internal static class Program
             
             if (!device.IgnoreInputFrequency)
             {
-                IMetric inputFrequencyMetric = MetricsHelper.CreateGauge(metricPrefix + "input_frequency", "Network frequency on the input", deviceName,
+                IMetric inputFrequencyMetric = MetricsHelper.CreateGauge(metricPrefix + "input_frequency", "Network frequency on the input",
                     () => device.InputFrequency.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(inputFrequencyMetric);
