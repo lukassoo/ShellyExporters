@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using NuGet.Versioning;
 using Serilog;
 using Utilities;
@@ -185,7 +185,7 @@ internal static class Program
             {
                 if (!meterReading.powerIgnored)
                 {
-                    IMetric powerMetric = MetricsHelper.CreateGauge(metricPrefix + "power", "Power (W)", 
+                    IMetric powerMetric = MetricsHelper.CreateGauge(metricPrefix + meterReading.meterIndex + "_power", "Power (W)", 
                         () => meterReading.power.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerMetric);
@@ -193,7 +193,7 @@ internal static class Program
 
                 if (!meterReading.currentIgnored)
                 {
-                    IMetric currentMetric = MetricsHelper.CreateGauge(metricPrefix + "current", "Current (A)", 
+                    IMetric currentMetric = MetricsHelper.CreateGauge(metricPrefix + meterReading.meterIndex + "_current", "Current (A)", 
                         () => meterReading.current.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(currentMetric);
@@ -201,7 +201,7 @@ internal static class Program
                 
                 if (!meterReading.voltageIgnored)
                 {
-                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricPrefix + "voltage", "Voltage (V)", 
+                    IMetric voltageMetric = MetricsHelper.CreateGauge(metricPrefix + meterReading.meterIndex + "_voltage", "Voltage (V)", 
                         () => meterReading.voltage.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(voltageMetric);
@@ -209,7 +209,7 @@ internal static class Program
                 
                 if (!meterReading.powerFactorIgnored)
                 {
-                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(metricPrefix + "power_factor", "Power Factor", 
+                    IMetric powerFactorMetric = MetricsHelper.CreateGauge(metricPrefix + meterReading.meterIndex + "_power_factor", "Power Factor", 
                         () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerFactorMetric);
@@ -217,7 +217,7 @@ internal static class Program
                 
                 if (!meterReading.totalIgnored)
                 {
-                    IMetric totalMetric = MetricsHelper.CreateGauge(metricPrefix + "total_energy", "Total Energy (Wh)", 
+                    IMetric totalMetric = MetricsHelper.CreateGauge(metricPrefix + meterReading.meterIndex + "_total_energy", "Total Energy (Wh)", 
                         () => meterReading.total.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(totalMetric);
@@ -225,7 +225,7 @@ internal static class Program
                 
                 if (!meterReading.totalReturnedIgnored)
                 {
-                    IMetric totalReturnedMetric = MetricsHelper.CreateGauge(metricPrefix + "total_energy_returned", "Total Energy returned to the grid (Wh)", 
+                    IMetric totalReturnedMetric = MetricsHelper.CreateGauge(metricPrefix + meterReading.meterIndex + "_total_energy_returned", "Total Energy returned to the grid (Wh)", 
                         () => meterReading.totalReturned.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(totalReturnedMetric);
