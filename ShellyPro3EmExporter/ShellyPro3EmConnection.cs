@@ -213,7 +213,7 @@ public class ShellyPro3EmConnection : IDeviceConnection
         
             foreach (MeterReading meterReading in meterReadings)
             {
-                string phase = indexToPhaseMap[meterReading.meterIndex];
+                string phase = indexToPhaseMap[meterReading.meterIndex - 1];
                 
                 if (!meterReading.currentIgnored)
                 {
