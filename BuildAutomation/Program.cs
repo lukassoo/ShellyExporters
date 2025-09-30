@@ -16,15 +16,12 @@ internal static class Program
 {
     static ILogger log = null!;
 
-    static readonly SemanticVersion version = SemanticVersion.Parse("1.5.0");
+    static readonly SemanticVersion version = SemanticVersion.Parse("1.5.1");
     static readonly DateTime buildTime = DateTime.UtcNow;
     
     static List<string> tagNames = ["armv7", "armv8", "latest"];
-    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", 
-                                        "ShellyProEmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter", "ShellyPro4PmExporter"];
     
     // static List<string> tagNames = ["development"];
-    // static List<string> projectNames = ["ShellyPro3EmExporter"];
 
     const bool pushImages = true;
     
@@ -65,6 +62,9 @@ internal static class Program
         log = Log.ForContext(typeof(Program));
         
         log.Information("---------- Starting ----------");
+        log.Information("Version: {version}", version.ToString());
+        log.Information("Build time: {buildTime}", buildTime.ToString("yyyy-MM-dd HH:mm:ss") + " UTC");
+        log.Information("------------------------------");
 
         DirectoryInfo? solutionDirectory = TryGetSolutionDirectoryInfo();
 
