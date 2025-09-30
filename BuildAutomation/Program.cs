@@ -20,8 +20,11 @@ internal static class Program
     static readonly DateTime buildTime = DateTime.UtcNow;
     
     static List<string> tagNames = ["armv7", "armv8", "latest"];
+    static List<string> projectNames = ["Shelly3EmExporter", "ShellyPlugExporter", "ShellyPlus1PmExporter", "ShellyPlusPlugExporter", "ShellyPro3EmExporter", 
+                                        "ShellyProEmExporter", "ShellyPlusPmMiniExporter", "ShellyEmExporter", "ShellyPro4PmExporter"];
     
     // static List<string> tagNames = ["development"];
+    // static List<string> projectNames = ["ShellyPro3EmExporter"];
 
     const bool pushImages = true;
     
