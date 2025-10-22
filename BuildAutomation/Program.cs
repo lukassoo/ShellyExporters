@@ -16,7 +16,7 @@ internal static class Program
 {
     static ILogger log = null!;
 
-    static readonly SemanticVersion version = SemanticVersion.Parse("1.5.1");
+    static readonly SemanticVersion version = SemanticVersion.Parse("1.5.2");
     static readonly DateTime buildTime = DateTime.UtcNow;
     
     static List<string> tagNames = ["armv7", "armv8", "latest"];
