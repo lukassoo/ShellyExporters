@@ -210,10 +210,26 @@ public class ShellyPro3EmConnection : IDeviceConnection
             JsonDocument json = JsonDocument.Parse(requestResponse);
 
             JsonElement paramsElement = json.RootElement.GetProperty("result");
-        
+
+            if (meterReadings.Length < 1)
+            {
+                return false;
+            }
+            
+            bool startingFromZero = meterReadings[0].meterIndex == 0;
+            
             foreach (MeterReading meterReading in meterReadings)
             {
-                string phase = indexToPhaseMap[meterReading.meterIndex - 1];
+                string phase;
+                
+                if (startingFromZero)
+                {
+                    phase = indexToPhaseMap[meterReading.meterIndex];
+                }
+                else
+                {
+                    phase = indexToPhaseMap[meterReading.meterIndex - 1];
+                }
                 
                 if (!meterReading.currentIgnored)
                 {
