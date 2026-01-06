@@ -11,7 +11,7 @@ public class ShellyPro4PmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPro4PmConnection>();
 
-    readonly string targetName;
+    public string TargetName { get; }
 
     DateTime lastSuccessfulRequest = DateTime.MinValue;
     readonly Stopwatch requestStopWatch = new();
@@ -24,7 +24,7 @@ public class ShellyPro4PmConnection : IDeviceConnection
 
     public ShellyPro4PmConnection(TargetDevice target)
     {
-        targetName = target.name;
+        TargetName = target.name;
         string targetUrl = target.url + "/rpc";
 
         TimeSpan requestTimeoutTime = TimeSpan.FromSeconds(target.requestTimeoutTime);
@@ -47,11 +47,6 @@ public class ShellyPro4PmConnection : IDeviceConnection
         {
             meterReadings[i] = new MeterReading(targetMeters[i]);
         }
-    }
-
-    public string GetTargetName()
-    {
-        return targetName;
     }
 
     public MeterReading[] GetCurrentMeterReadings()

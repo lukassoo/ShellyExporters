@@ -102,7 +102,7 @@ internal static class Program
         {
             ShellyPlugConnection device = (ShellyPlugConnection)deviceConnection;
             
-            string targetName = device.GetTargetName();
+            string targetName = device.TargetName;
             const string deviceModel = "Plug";
             
             if (!device.IgnoreCurrentPower)
@@ -131,7 +131,7 @@ internal static class Program
         {
             ShellyPlugConnection device = (ShellyPlugConnection)deviceConnection;
             
-            string deviceName = device.GetTargetName();
+            string deviceName = device.TargetName;
             string metricPrefix = "shellyplug_" + deviceName + "_";
             
             if (!device.IgnoreCurrentPower)

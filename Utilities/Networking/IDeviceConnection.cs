@@ -2,6 +2,7 @@
 
 public interface IDeviceConnection
 {
-    public string GetTargetName();
+    public string TargetName { get; }
+    
     public Task<bool> UpdateMetricsIfNecessary();
 }

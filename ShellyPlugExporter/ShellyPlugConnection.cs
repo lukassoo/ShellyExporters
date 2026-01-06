@@ -9,7 +9,7 @@ public class ShellyPlugConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPlugConnection>();
     
-    readonly string targetName;
+    public string TargetName { get; }
 
     DateTime lastRequest = DateTime.MinValue;
         
@@ -29,7 +29,7 @@ public class ShellyPlugConnection : IDeviceConnection
     
     public ShellyPlugConnection(TargetDevice target)
     {
-        targetName = target.name;
+        TargetName = target.name;
         string targetUrl1 = target.url + "/status";
 
         IgnoreCurrentPower = target.ignorePowerMetric;
@@ -42,11 +42,6 @@ public class ShellyPlugConnection : IDeviceConnection
         {
             requestHandler.SetAuth(target.username, target.password);
         }
-    }
-
-    public string GetTargetName()
-    {
-        return targetName;
     }
 
     // Gets the current power flowing through the plug but only when necessary - set through minimumTimeBetweenRequests

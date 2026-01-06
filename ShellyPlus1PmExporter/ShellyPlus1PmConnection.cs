@@ -9,7 +9,7 @@ public class ShellyPlus1PmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPlus1PmConnection>();
     
-    readonly string targetName;
+    public string TargetName { get; }
 
     DateTime lastRequest = DateTime.MinValue;
         
@@ -51,7 +51,7 @@ public class ShellyPlus1PmConnection : IDeviceConnection
     
     public ShellyPlus1PmConnection(TargetDevice target)
     {
-        targetName = target.name;
+        TargetName = target.name;
         string targetUrl = target.url + "/rpc";
 
         IgnoreTotalPower = target.ignoreTotalPowerMetric;
@@ -97,11 +97,6 @@ public class ShellyPlus1PmConnection : IDeviceConnection
             switchRequestHandler.SetAuth(target.password);
             inputRequestHandler?.SetAuth(target.password);
         }
-    }
-
-    public string GetTargetName()
-    {
-        return targetName;
     }
     
     public async Task<bool> UpdateMetricsIfNecessary()

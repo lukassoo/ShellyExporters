@@ -11,7 +11,7 @@ public class ShellyPro3EmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyPro3EmConnection>();
 
-    readonly string targetName;
+    public string TargetName { get; }
 
     DateTime lastSuccessfulRequest = DateTime.MinValue;
     readonly Stopwatch requestStopWatch = new();
@@ -60,7 +60,7 @@ public class ShellyPro3EmConnection : IDeviceConnection
     
     public ShellyPro3EmConnection(TargetDevice target)
     {
-        targetName = target.name;
+        TargetName = target.name;
         string targetUrl = target.url + "/rpc";
 
         IsTotalCurrentIgnored = target.ignoreTotalCurrent;
@@ -120,11 +120,6 @@ public class ShellyPro3EmConnection : IDeviceConnection
         {
             meterReadings[i] = new MeterReading(targetMeters[i]);
         }
-    }
-
-    public string GetTargetName()
-    {
-        return targetName;
     }
     
     public MeterReading[] GetCurrentMeterReadings()

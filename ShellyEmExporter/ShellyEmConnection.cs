@@ -9,7 +9,7 @@ public class ShellyEmConnection : IDeviceConnection
 {
     static readonly ILogger log = Log.ForContext<ShellyEmConnection>();
 
-    readonly string targetName;
+    public string TargetName { get; }
 
     DateTime lastRequest = DateTime.MinValue;
 
@@ -25,7 +25,7 @@ public class ShellyEmConnection : IDeviceConnection
     
     public ShellyEmConnection(TargetDevice target)
     {
-        targetName = target.name;
+        TargetName = target.name;
         string targetUrl = target.url + "/status";
         
         IsRelayStateIgnored = target.ignoreRelayStateMetric;
@@ -53,11 +53,6 @@ public class ShellyEmConnection : IDeviceConnection
                                                 targetMeters[i].ignoreTotalReturned,
                                                 targetMeters[i].computeCurrent);
         }
-    }
-
-    public string GetTargetName()
-    {
-        return targetName;
     }
     
     public MeterReading[] GetCurrentMeterReadings()

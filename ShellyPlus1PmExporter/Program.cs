@@ -101,7 +101,7 @@ internal static class Program
         {
             ShellyPlus1PmConnection device = (ShellyPlus1PmConnection)deviceConnection;
             
-            string targetName = device.GetTargetName();
+            string targetName = device.TargetName;
             const string deviceModel = "Plus1Pm";
             
             if (!device.IgnoreTotalPower)
@@ -172,7 +172,7 @@ internal static class Program
         {
             ShellyPlus1PmConnection device = (ShellyPlus1PmConnection)deviceConnection;
             
-            string deviceName = device.GetTargetName();
+            string deviceName = device.TargetName;
             string metricPrefix = "shellyPlus1Pm_" + deviceName + "_";
             
             if (!device.IgnoreTotalPower)

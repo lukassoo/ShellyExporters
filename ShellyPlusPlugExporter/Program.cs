@@ -101,7 +101,7 @@ internal static class Program
         {
             ShellyPlusPlugConnection device = (ShellyPlusPlugConnection)deviceConnection;
             
-            string targetName = device.GetTargetName();
+            string targetName = device.TargetName;
             const string deviceModel = "PlusPlug";
             
             if (!device.IgnoreTotalPower)
@@ -148,7 +148,7 @@ internal static class Program
         {
             ShellyPlusPlugConnection device = (ShellyPlusPlugConnection)deviceConnection;
             
-            string deviceName = device.GetTargetName();
+            string deviceName = device.TargetName;
             string metricPrefix = "shellyplusplug_" + deviceName + "_";
             
             if (!device.IgnoreTotalPower)

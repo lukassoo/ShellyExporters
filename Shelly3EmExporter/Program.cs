@@ -110,7 +110,7 @@ internal static class Program
         {
             Shelly3EmConnection device = (Shelly3EmConnection)deviceConnection;
             
-            string targetName = device.GetTargetName();
+            string targetName = device.TargetName;
             const string deviceModel = "3Em";
             
             if (!device.IsRelayStateIgnored)
@@ -168,7 +168,7 @@ internal static class Program
         {
             Shelly3EmConnection device = (Shelly3EmConnection)deviceConnection;
                 
-            string deviceName = device.GetTargetName();
+            string deviceName = device.TargetName;
 
             string metricPrefix = "shelly3em_" + deviceName + "_";
             

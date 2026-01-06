@@ -89,7 +89,7 @@ public static class MetricsHelper
         {
             if (!await deviceConnection.UpdateMetricsIfNecessary())
             {
-                log.Error("Failed to update metrics for target device: {targetName}", deviceConnection.GetTargetName());
+                log.Error("Failed to update metrics for target device: {targetName}", deviceConnection.TargetName);
 
                 foreach (IMetric metric in metrics)
                 {

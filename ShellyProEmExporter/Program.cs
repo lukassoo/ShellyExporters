@@ -108,7 +108,7 @@ internal static class Program
         {
             ShellyProEmConnection device = (ShellyProEmConnection)deviceConnection;
             
-            string targetName = device.GetTargetName();
+            string targetName = device.TargetName;
             const string deviceModel = "ProEm";
 
             MeterReading[] meterReadings = device.GetCurrentMeterReadings();
@@ -178,7 +178,7 @@ internal static class Program
         {
             ShellyProEmConnection device = (ShellyProEmConnection)deviceConnection;
             
-            string deviceName = device.GetTargetName();
+            string deviceName = device.TargetName;
             string metricPrefix = "shellyProEm_" + deviceName + "_";
 
             MeterReading[] meterReadings = device.GetCurrentMeterReadings();
