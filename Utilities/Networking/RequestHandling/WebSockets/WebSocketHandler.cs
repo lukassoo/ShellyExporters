@@ -164,6 +164,8 @@ public class WebSocketHandler
 
     async Task<bool> Connect()
     {
+        ClientWebSocket tempWebSocket = new();
+        
         try
         {
             if (isConnecting)
@@ -178,9 +180,8 @@ public class WebSocketHandler
             webSocket?.Dispose();
             webSocket = null;
             
-            ClientWebSocket tempWebSocket = new();
-            
-            // TODO: Set a shorter web socket timeout using the builtin way once it is possible in .NET 9: https://github.com/dotnet/runtime/issues/48729
+            tempWebSocket.Options.KeepAliveInterval = TimeSpan.FromSeconds(3);
+            tempWebSocket.Options.KeepAliveTimeout = TimeSpan.FromSeconds(3);
 
             CancellationTokenSource tempCancellationSource = new();
             tempCancellationSource.CancelAfter(TimeSpan.FromSeconds(3));
@@ -212,6 +213,7 @@ public class WebSocketHandler
                 log.Error(exception, "Failed to connect to web socket at " + targetUrl);
             }
             
+            tempWebSocket.Dispose();
             isConnecting = false;
             return false;
         }
