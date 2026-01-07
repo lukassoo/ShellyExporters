@@ -7,7 +7,7 @@ using Uri = System.Uri;
 
 namespace Utilities.Networking.RequestHandling.WebSockets;
 
-public class WebSocketHandler
+public class WebSocketHandler : IRequestHandler
 {
     static readonly ILogger log = Log.ForContext<WebSocketHandler>();
     
@@ -18,7 +18,7 @@ public class WebSocketHandler
     readonly byte[] responseBuffer = new byte[1024 * 10];
 
     readonly TimeSpan requestTimeoutTime;
-    RequestObject requestObject;
+    readonly RequestObject requestObject;
     string requestJson = null!;
     
     AuthObject? authObject;
@@ -33,17 +33,17 @@ public class WebSocketHandler
     
     public WebSocketHandler(string targetUrl, RequestObject requestObject, TimeSpan requestTimeoutTime)
     {
-        if (targetUrl.Contains("https"))
+        if (targetUrl.StartsWith("https"))
         {
             targetUrl = targetUrl.Replace("https", "ws");
         }
 
-        if (targetUrl.Contains("http"))
+        if (targetUrl.StartsWith("http"))
         {
             targetUrl = targetUrl.Replace("http", "ws");
         }
 
-        if (!targetUrl.Contains("ws"))
+        if (!targetUrl.StartsWith("ws"))
         {
             targetUrl = "ws://" + targetUrl;
         }

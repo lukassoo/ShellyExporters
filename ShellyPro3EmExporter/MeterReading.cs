@@ -8,12 +8,14 @@ public class MeterReading
     public bool activePowerIgnored;
     public bool apparentPowerIgnored;
     public bool powerFactorIgnored;
+    public bool frequencyIgnored;
     
     public float current;
     public float voltage;
     public float activePower;
     public float apparentPower;
     public float powerFactor;
+    public float frequency;
 
     public MeterReading(TargetMeter targetMeter)
     {
@@ -23,5 +25,6 @@ public class MeterReading
         activePowerIgnored = targetMeter.ignoreActivePower;
         apparentPowerIgnored = targetMeter.ignoreApparentPower;
         powerFactorIgnored = targetMeter.ignorePowerFactor;
+        frequencyIgnored = targetMeter.ignoreFrequency;
     }
 }

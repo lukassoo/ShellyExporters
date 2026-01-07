@@ -35,9 +35,4 @@ public class TargetDevice
     {
         return !string.IsNullOrEmpty(password);
     }
-
-    public bool NeedsTotalEnergyRequests()
-    {
-        return !ignoreTotalActiveEnergyPhase1 || !ignoreTotalActiveEnergyPhase2 || !ignoreTotalActiveReturnedEnergyPhase1 || !ignoreTotalActiveReturnedEnergyPhase2; 
-    }
 }

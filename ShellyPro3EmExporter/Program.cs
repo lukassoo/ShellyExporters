@@ -4,7 +4,6 @@ using Serilog;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
-using Utilities.Networking;
 
 namespace ShellyPro3EmExporter;
 
@@ -19,7 +18,7 @@ internal static class Program
     const int defaultPort = 10011;
     static int listenPort = defaultPort;
     
-    static readonly Dictionary<IDeviceConnection, List<IMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<Device, List<IMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
@@ -91,7 +90,7 @@ internal static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceToMetricsDictionary.Add(new ShellyPro3EmConnection(target), []);
+            deviceToMetricsDictionary.Add(new ShellyPro3Em(target), []);
         }
     }
 
@@ -105,14 +104,14 @@ internal static class Program
             return;
         }
         
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            ShellyPro3EmConnection device = (ShellyPro3EmConnection)deviceConnection;
+            ShellyPro3Em device = (ShellyPro3Em)baseDevice;
             
             string targetName = device.TargetName;
             const string deviceModel = "Pro3Em";
             
-            MeterReading[] meterReadings = device.GetCurrentMeterReadings();
+            MeterReading[] meterReadings = device.GetMeterReadings();
 
             foreach (MeterReading meterReading in meterReadings)
             {
@@ -144,6 +143,12 @@ internal static class Program
                 {
                     IMetric powerFactorMetric = PredefinedMetrics.CreatePhasePowerFactorMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.powerFactor);
                     deviceMetrics.Add(powerFactorMetric);
+                }
+                
+                if (!meterReading.frequencyIgnored)
+                {
+                    IMetric frequencyMetric = PredefinedMetrics.CreatePhaseFrequencyMetric(targetName, deviceModel, meterReading.meterIndex, () => meterReading.frequency);
+                    deviceMetrics.Add(frequencyMetric);
                 }
             }
             
@@ -217,15 +222,15 @@ internal static class Program
 
     static void SetupDevicesWithOldNaming()
     {
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            ShellyPro3EmConnection device = (ShellyPro3EmConnection)deviceConnection;
+            ShellyPro3Em device = (ShellyPro3Em)baseDevice;
             
             string deviceName = device.TargetName;
             
             string oldMetricPrefix = "shellyPro3Em_" + deviceName + "_";
 
-            MeterReading[] meterReadings = device.GetCurrentMeterReadings();
+            MeterReading[] meterReadings = device.GetMeterReadings();
 
             foreach (MeterReading meterReading in meterReadings)
             {
@@ -275,6 +280,14 @@ internal static class Program
                         () => meterReading.powerFactor.ToString("0.00", CultureInfo.InvariantCulture));
                     
                     deviceMetrics.Add(powerFactorMetric);
+                }
+
+                if (!meterReading.frequencyIgnored)
+                {
+                    IMetric frequencyMetric = MetricsHelper.CreateGauge(oldMetricPrefix + meterReading.meterIndex + "_frequency", "Frequency (Hz)", 
+                        () => meterReading.frequency.ToString("0.00", CultureInfo.InvariantCulture));
+
+                    deviceMetrics.Add(frequencyMetric);
                 }
             }
             

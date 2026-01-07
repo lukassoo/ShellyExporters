@@ -3,7 +3,7 @@ using Serilog;
 
 namespace Utilities.Networking.RequestHandling;
 
-public class HttpRequestHandler
+public class HttpRequestHandler : IRequestHandler
 {
     static readonly ILogger log = Log.ForContext<HttpRequestHandler>();
 

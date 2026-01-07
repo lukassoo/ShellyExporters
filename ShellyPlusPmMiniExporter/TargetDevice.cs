@@ -9,6 +9,7 @@ public class TargetDevice
     public float requestTimeoutTime = 3;
     
     public bool ignoreTotalPowerMetric;
+    public bool ignoreTotalEnergyReturnedMetric;
     public bool ignorePowerMetric;
     public bool ignoreVoltageMetric;
     public bool ignoreCurrentMetric;
@@ -36,10 +37,5 @@ public class TargetDevice
     public bool RequiresAuthentication()
     {
         return !string.IsNullOrEmpty(password);
-    }
-
-    public bool NeedsInputStatusRequests()
-    {
-        return ignoreInputState || ignoreInputPercent || ignoreInputCountTotal || ignoreInputFrequency;
     }
 }

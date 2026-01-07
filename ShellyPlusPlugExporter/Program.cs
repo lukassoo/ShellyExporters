@@ -4,7 +4,6 @@ using Serilog;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
-using Utilities.Networking;
 
 namespace ShellyPlusPlugExporter;
 
@@ -19,7 +18,7 @@ internal static class Program
     const int defaultPort = 10009;
     static int listenPort = defaultPort;
     
-    static readonly Dictionary<IDeviceConnection, List<IMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<Device, List<IMetric>> deviceToMetricsDictionary = new(1);
     
     static async Task Main()
     {
@@ -83,7 +82,7 @@ internal static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceToMetricsDictionary.Add(new ShellyPlusPlugConnection(target), []);
+            deviceToMetricsDictionary.Add(new ShellyPlusPlug(target), []);
         }
     }
 
@@ -97,16 +96,16 @@ internal static class Program
             return;
         }
 
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            ShellyPlusPlugConnection device = (ShellyPlusPlugConnection)deviceConnection;
+            ShellyPlusPlug device = (ShellyPlusPlug)baseDevice;
             
             string targetName = device.TargetName;
             const string deviceModel = "PlusPlug";
             
-            if (!device.IgnoreTotalPower)
+            if (!device.IgnoreTotalEnergy)
             {
-                IMetric totalEnergyMetric = PredefinedMetrics.CreateTotalEnergyMetric(targetName, deviceModel, () => device.TotalPower);
+                IMetric totalEnergyMetric = PredefinedMetrics.CreateTotalEnergyMetric(targetName, deviceModel, () => device.TotalEnergy);
                 deviceMetrics.Add(totalEnergyMetric);
             }
             
@@ -144,17 +143,17 @@ internal static class Program
 
     static void SetupDevicesWithOldNaming()
     {
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            ShellyPlusPlugConnection device = (ShellyPlusPlugConnection)deviceConnection;
+            ShellyPlusPlug device = (ShellyPlusPlug)baseDevice;
             
             string deviceName = device.TargetName;
             string metricPrefix = "shellyplusplug_" + deviceName + "_";
             
-            if (!device.IgnoreTotalPower)
+            if (!device.IgnoreTotalEnergy)
             {
                 IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "total_power", "The total power/energy consumed through the plug in Watt-hours",
-                    () => device.TotalPower.ToString("0.00", CultureInfo.InvariantCulture));
+                    () => device.TotalEnergy.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
             }

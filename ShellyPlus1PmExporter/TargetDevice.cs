@@ -39,9 +39,4 @@ public class TargetDevice
     {
         return !string.IsNullOrEmpty(password);
     }
-
-    public bool NeedsInputStatusRequests()
-    {
-        return ignoreInputState || ignoreInputPercent || ignoreInputCountTotal || ignoreInputFrequency;
-    }
 }

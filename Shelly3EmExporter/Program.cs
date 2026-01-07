@@ -4,7 +4,6 @@ using Serilog;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
-using Utilities.Networking;
 
 namespace Shelly3EmExporter;
 
@@ -19,7 +18,7 @@ internal static class Program
     const int defaultPort = 9946;
     static int listenPort = defaultPort;
     
-    static readonly Dictionary<IDeviceConnection, List<IMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<Device, List<IMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
@@ -92,7 +91,7 @@ internal static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceToMetricsDictionary.Add(new Shelly3EmConnection(target), []);
+            deviceToMetricsDictionary.Add(new Shelly3Em(target), []);
         }
     }
 
@@ -106,9 +105,9 @@ internal static class Program
             return;
         }
         
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            Shelly3EmConnection device = (Shelly3EmConnection)deviceConnection;
+            Shelly3Em device = (Shelly3Em)deviceConnection;
             
             string targetName = device.TargetName;
             const string deviceModel = "3Em";
@@ -164,9 +163,9 @@ internal static class Program
     
     static void SetupDevicesWithOldNaming()
     {
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            Shelly3EmConnection device = (Shelly3EmConnection)deviceConnection;
+            Shelly3Em device = (Shelly3Em)baseDevice;
                 
             string deviceName = device.TargetName;
 

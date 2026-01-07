@@ -44,9 +44,4 @@ public class TargetDevice
     {
         return !string.IsNullOrEmpty(password);
     }
-
-    public bool NeedsTotalEnergyRequests()
-    {
-        return !ignoreTotalActiveEnergy || !ignoreTotalActiveReturnedEnergy;
-    }
 }

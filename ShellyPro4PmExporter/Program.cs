@@ -4,7 +4,6 @@ using Serilog;
 using Utilities;
 using Utilities.Configs;
 using Utilities.Metrics;
-using Utilities.Networking;
 
 namespace ShellyPro4PmExporter;
 
@@ -19,7 +18,7 @@ internal static class Program
     const int defaultPort = 10037;
     static int listenPort = defaultPort;
 
-    static readonly Dictionary<IDeviceConnection, List<IMetric>> deviceToMetricsDictionary = new(1);
+    static readonly Dictionary<Device, List<IMetric>> deviceToMetricsDictionary = new(1);
 
     static async Task Main()
     {
@@ -92,7 +91,7 @@ internal static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceToMetricsDictionary.Add(new ShellyPro4PmConnection(target), []);
+            deviceToMetricsDictionary.Add(new ShellyPro4Pm(target), []);
         }
     }
 
@@ -106,9 +105,9 @@ internal static class Program
             return;
         }
         
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            ShellyPro4PmConnection device = (ShellyPro4PmConnection)deviceConnection;
+            ShellyPro4Pm device = (ShellyPro4Pm)baseDevice;
             
             string targetName = device.TargetName;
             const string deviceModel = "Pro4Pm";
@@ -176,9 +175,9 @@ internal static class Program
 
     static void SetupDevicesWithOldNaming()
     {
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
         {
-            ShellyPro4PmConnection device = (ShellyPro4PmConnection)deviceConnection;
+            ShellyPro4Pm device = (ShellyPro4Pm)baseDevice;
             
             string deviceName = device.TargetName;
             string metricPrefix = "shellyPro4Pm_" + deviceName + "_";

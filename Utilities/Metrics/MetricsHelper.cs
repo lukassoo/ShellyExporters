@@ -1,6 +1,5 @@
 ﻿using Prometheus;
 using Serilog;
-using Utilities.Networking;
 
 namespace Utilities.Metrics;
 
@@ -82,14 +81,14 @@ public static class MetricsHelper
         
         return new GaugeMetric(gauge, metricValueGetterFunction);
     }
-    
-    public static async Task UpdateDeviceMetrics(Dictionary<IDeviceConnection, List<IMetric>> deviceMetricDictionary)
+        
+    public static async Task UpdateDeviceMetrics(Dictionary<Device, List<IMetric>> deviceMetricDictionary)
     {
-        foreach ((IDeviceConnection deviceConnection, List<IMetric> metrics) in deviceMetricDictionary)
+        foreach ((Device device, List<IMetric> metrics) in deviceMetricDictionary)
         {
-            if (!await deviceConnection.UpdateMetricsIfNecessary())
+            if (!await device.UpdateMetricsIfNecessary())
             {
-                log.Error("Failed to update metrics for target device: {targetName}", deviceConnection.TargetName);
+                log.Error("Failed to update metrics for target device: {targetName}", device.TargetName);
 
                 foreach (IMetric metric in metrics)
                 {
