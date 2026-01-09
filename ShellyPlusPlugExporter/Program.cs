@@ -160,7 +160,7 @@ internal static class Program
             
             if (!device.IgnoreCurrentPower)
             {
-                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "current_power", "The amount of power currently flowing through the plug in watts", 
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "currently_used_power", "The amount of power currently flowing through the plug in watts", 
                     () => device.CurrentlyUsedPower.ToString("0.00", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
