@@ -170,18 +170,10 @@ internal static class Program
                 deviceMetrics.Add(totalApparentPowerMetric);
             }
 
-            if (!device.IsTotalActiveEnergyIgnored)
-            {
-                IMetric totalActiveEnergyMetric = PredefinedMetrics.CreateTotalActiveEnergyMetric(targetName, deviceModel, () => device.TotalActiveEnergy);
-                deviceMetrics.Add(totalActiveEnergyMetric);
-            }
+            // Not reporting the sum of total active energy and total active energy returned.
+            // These values should be calculated from the individual phase values.
+            // Only the old format still reports them as it doesn't use labels and for compatibility.
             
-            if (!device.IsTotalActiveEnergyReturnedIgnored)
-            {
-                IMetric totalActiveEnergyReturnedMetric = PredefinedMetrics.CreateTotalActiveEnergyReturnedMetric(targetName, deviceModel, () => device.TotalActiveEnergyReturned);
-                deviceMetrics.Add(totalActiveEnergyReturnedMetric);
-            }
-
             if (!device.IsTotalActiveEnergyPhase1Ignored)
             {
                 IMetric totalActiveEnergyPhase1Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyMetric(targetName, deviceModel, 1, () => device.TotalActiveEnergyPhase1);
