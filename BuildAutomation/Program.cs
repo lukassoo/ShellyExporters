@@ -59,7 +59,7 @@ internal static class Program
     
     static readonly Dictionary<string, string> versionFileOriginalContentMap = new();
     
-    static async Task Main(string[] args)
+    static async Task Main()
     {
         LogSystem.Init(false, "Information");
         log = Log.ForContext(typeof(Program));
@@ -222,6 +222,7 @@ internal static class Program
             Command command = Cli.Wrap("docker")
                 .WithArguments(["build", "--platform", targetPlatform, "-f-", "-t", fullImageName, "."])
                 .WithWorkingDirectory(projectDirectory.FullName)
+                .WithStandardErrorPipe(PipeTarget.ToDelegate(_ => {}))
                 .WithStandardInputPipe(PipeSource.FromString(finalDockerfile));
 
             try
@@ -238,7 +239,9 @@ internal static class Program
 
                 if (push)
                 {
-                    Command pushCommand = Cli.Wrap("docker").WithArguments(["image", "push", fullImageName]);
+                    Command pushCommand = Cli.Wrap("docker")
+                        .WithArguments(["image", "push", fullImageName])
+                        .WithStandardOutputPipe(PipeTarget.ToDelegate(_ => {}));
                     
                     CommandResult pushResult = await pushCommand.ExecuteAsync();
 
@@ -254,7 +257,7 @@ internal static class Program
             }
             catch (Exception exception)
             {
-                log.Error(exception, "Failed to build image: {projectName}", projectName);
+                log.Error(exception, "Failed to build or push image: {projectName}", projectName);
             }
         }
 
