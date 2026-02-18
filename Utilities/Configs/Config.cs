@@ -13,5 +13,22 @@ public class Config<T>
     /// Only new users that generate a new config file will have this option disabled from the start.
     public bool useOldIncorrectMetricNames = true;
     
+    public Dictionary<string, string> additionalKeyValuePairs = new();
+    
     public List<T> targets = new(1);
+    
+    public bool TryGetAdditionalValueString(string key, out string? value)
+    {
+        return additionalKeyValuePairs.TryGetValue(key, out value);
+    }
+    
+    public bool TryGetAdditionalValueBool(string key, out bool value)
+    {
+        return bool.TryParse(additionalKeyValuePairs[key], out value);
+    }
+    
+    public bool TryGetAdditionalValueInt(string key, out int value)
+    {
+        return int.TryParse(additionalKeyValuePairs[key], out value);
+    }
 }
