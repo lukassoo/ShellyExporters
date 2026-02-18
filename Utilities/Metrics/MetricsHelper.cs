@@ -82,33 +82,23 @@ public static class MetricsHelper
         return new GaugeMetric(gauge, metricValueGetterFunction);
     }
         
-    public static async Task UpdateDeviceMetrics(Dictionary<Device, List<IMetric>> deviceMetricDictionary)
+    public static async Task UpdateDeviceMetrics(List<Device> devices)
     {
-        foreach ((Device device, List<IMetric> metrics) in deviceMetricDictionary)
+        foreach (Device device in devices)
         {
-            if (!await device.UpdateMetricsIfNecessary())
+            if (!await device.UpdateMetrics())
             {
-                log.Error("Failed to update metrics for target device: {targetName}", device.TargetName);
-
-                foreach (IMetric metric in metrics)
+                if (device.ErrorIfMetricsUpdateFails)
                 {
-                    if (metric.IsPublished)
-                    {
-                        metric.Unpublish();
-                    }
+                    log.Error("Failed to update metrics for target device: {targetName}", device.TargetName);
                 }
                 
                 continue;
             }
-            
-            foreach (IMetric metric in metrics)
+
+            foreach (IMetric metric in device.Metrics)
             {
                 metric.Update();
-                
-                if (!metric.IsPublished)
-                {
-                    metric.Publish();
-                }
             }
         }
     }

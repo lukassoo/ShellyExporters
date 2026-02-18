@@ -18,7 +18,7 @@ internal static class Program
     const int defaultPort = 9946;
     static int listenPort = defaultPort;
     
-    static readonly Dictionary<Device, List<IMetric>> deviceToMetricsDictionary = new(1);
+    static readonly List<Device> devices = new(1);
 
     static async Task Main()
     {
@@ -38,7 +38,7 @@ internal static class Program
             SetupDevicesFromConfig(config);
             SetupMetrics(config.useOldIncorrectMetricNames);
             
-            if (!MetricsServer.Start((ushort)listenPort, _ => MetricsHelper.UpdateDeviceMetrics(deviceToMetricsDictionary)))
+            if (!MetricsServer.Start((ushort)listenPort, _ => MetricsHelper.UpdateDeviceMetrics(devices)))
             {
                 RuntimeAutomation.Shutdown("Failed to start metrics server");
             }
@@ -91,7 +91,7 @@ internal static class Program
         foreach (TargetDevice target in config.targets)
         {
             log.Information("Setting up: {targetName} at: {url} requires auth: {requiresAuth}", target.name, target.url, target.RequiresAuthentication());
-            deviceToMetricsDictionary.Add(new Shelly3Em(target), []);
+            devices.Add(new Shelly3Em(target));
         }
     }
 
@@ -105,9 +105,10 @@ internal static class Program
             return;
         }
         
-        foreach ((Device deviceConnection, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach (Device baseDevice in devices)
         {
-            Shelly3Em device = (Shelly3Em)deviceConnection;
+            Shelly3Em device = (Shelly3Em)baseDevice;
+            List<IMetric> deviceMetrics = device.Metrics;
             
             string targetName = device.TargetName;
             const string deviceModel = "3Em";
@@ -163,9 +164,10 @@ internal static class Program
     
     static void SetupDevicesWithOldNaming()
     {
-        foreach ((Device baseDevice, List<IMetric> deviceMetrics) in deviceToMetricsDictionary)
+        foreach (Device baseDevice in devices)
         {
             Shelly3Em device = (Shelly3Em)baseDevice;
+            List<IMetric> deviceMetrics = device.Metrics;
                 
             string deviceName = device.TargetName;
 
