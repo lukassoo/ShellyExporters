@@ -44,7 +44,7 @@ internal static class Program
                 {
                     log.Error("No targets defined in config and allowAnyName is false - creating example target and returning");
                     
-                    config.targets.Add(new TargetDevice("Your Name for the device - like \"living_room\" - keep it formatted like that, lowercase with underscores",
+                    config.targets.Add(new TargetDevice("Your name for the device - like \"living_room\" - keep it formatted like that, lowercase with underscores",
                         false,
                         "Address (usually 192.168.X.X - the IP of your device), used if onlyAcceptFromAddress is true"));
                     
@@ -53,6 +53,24 @@ internal static class Program
                     RuntimeAutomation.Shutdown("Invalid config, new example config written, please update and restart");
                     await RuntimeAutomation.WaitForShutdown();
                     return;
+                }
+                
+                if (!allowAnyName)
+                {
+                    log.Information("Allowing only devices with names defined in config");
+
+                    foreach (TargetDevice target in config.targets)
+                    {
+                        log.Information("Adding device {targetName}, only allowing from address: {onlyFromAddress}:\"{address}\"", target.name, target.onlyAcceptFromAddress, target.address);
+                        
+                        ShellyHt device = new(target);
+                        nameToDeviceDictionary.Add(target.name, device);
+                        devices.Add(device);
+                    }
+                }
+                else
+                {
+                    log.Information("Allowing any device name");
                 }
             }
             
@@ -65,6 +83,17 @@ internal static class Program
             {
                 RuntimeAutomation.Shutdown("Failed to start metrics server");
             }
+
+            log.Information("--------------------------");
+            log.Information("This is the Shelly HT (Gen3) exporter");
+            log.Information("The Shelly HT device works differently than many of the other Shelly devices.");
+            log.Information("The device sleeps for most of the time to conserve battery life and to eliminate self-heating which would cause inaccurate temperature readings.");
+            log.Information("");
+            log.Information("The exporter will wait for the device to wake up and report an update before publishing any metrics.");
+            log.Information("");
+            log.Information("The devices require configuration in order to send data to the exporter.");
+            log.Information("Read more: https://github.com/lukassoo/ShellyExporters/wiki/ShellyHt");
+            log.Information("--------------------------");
         }
         catch (Exception exception)
         {
@@ -121,6 +150,14 @@ internal static class Program
                 if (!TryGetDevice(deviceName, out ShellyHt? device))
                 {
                     context.Response.StatusCode = 400;
+                    context.Response.Close();
+                    continue;
+                }
+
+                if (device.OnlyAcceptFromAddress && context.Request.RemoteEndPoint.Address.ToString() != device.Address)
+                {
+                    log.Warning("Received request from unexpected IP address: {remote}", context.Request.RemoteEndPoint.Address);
+                    context.Response.StatusCode = 403;
                     context.Response.Close();
                     continue;
                 }
