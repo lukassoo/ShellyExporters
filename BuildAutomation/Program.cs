@@ -207,13 +207,14 @@ internal static class Program
         }
 
         string baseDockerFile = await File.ReadAllTextAsync(dockerFilePath);
+        baseDockerFile.ReplaceLineEndings("\n");
         
         foreach (string tagName in tagNames)
         {
             string baseImagePostfix = baseImagePostfixes[tagName];
             
             StringBuilder dockerfileStringBuilder = new(baseDockerFile);
-            dockerfileStringBuilder.Insert(48, baseImagePostfix);
+            dockerfileStringBuilder.Insert(49, baseImagePostfix);
             
             string finalDockerfile = dockerfileStringBuilder.ToString();
             string imageName = imageNames[projectName];
