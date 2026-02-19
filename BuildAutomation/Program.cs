@@ -38,7 +38,8 @@ internal static class Program
         {"ShellyProEmExporter", "lukassoo/shelly-pro-em-exporter"},
         {"ShellyPlusPmMiniExporter", "lukassoo/shelly-plus-pm-mini-exporter"},
         {"ShellyEmExporter", "lukassoo/shelly-em-exporter"},
-        {"ShellyPro4PmExporter", "lukassoo/shelly-pro-4pm-exporter"}
+        {"ShellyPro4PmExporter", "lukassoo/shelly-pro-4pm-exporter"},
+        {"ShellyHtExporter", "lukassoo/shelly-ht-exporter"}
     };
     
     static Dictionary<string, string> baseImagePostfixes = new()
