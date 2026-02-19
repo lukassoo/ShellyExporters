@@ -221,10 +221,12 @@ internal static class Program
             string targetPlatform = targetPlatforms[tagName];
             string fullImageName = imageName + ":" + tagName;
 
+            StringBuilder errorLogStringBuilder = new();
+            
             Command command = Cli.Wrap("docker")
                 .WithArguments(["build", "--platform", targetPlatform, "-f-", "-t", fullImageName, "."])
                 .WithWorkingDirectory(projectDirectory.FullName)
-                .WithStandardErrorPipe(PipeTarget.ToDelegate(_ => {}))
+                .WithStandardErrorPipe(PipeTarget.ToStringBuilder(errorLogStringBuilder))
                 .WithStandardInputPipe(PipeSource.FromString(finalDockerfile));
 
             try
@@ -239,11 +241,13 @@ internal static class Program
 
                 log.Information("Built image: {imageName}", fullImageName);
 
+                errorLogStringBuilder.Clear();
+                
                 if (push)
                 {
                     Command pushCommand = Cli.Wrap("docker")
                         .WithArguments(["image", "push", fullImageName])
-                        .WithStandardOutputPipe(PipeTarget.ToDelegate(_ => {}));
+                        .WithStandardOutputPipe(PipeTarget.ToStringBuilder(errorLogStringBuilder));
                     
                     CommandResult pushResult = await pushCommand.ExecuteAsync();
 
@@ -259,7 +263,7 @@ internal static class Program
             }
             catch (Exception exception)
             {
-                log.Error(exception, "Failed to build or push image: {projectName}", projectName);
+                log.Error(exception, "Failed to build or push image: {projectName}, error log:\n{errorLog}", projectName, errorLogStringBuilder.ToString());
             }
         }
 
