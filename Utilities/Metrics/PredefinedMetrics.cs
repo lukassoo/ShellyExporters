@@ -151,6 +151,12 @@ public static class PredefinedMetrics
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
     }
     
+    public static IMetric CreateHumidityMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
+    {
+        return MetricsHelper.CreateGauge("shelly_humidity", "Relative humidity", targetName, deviceModel,
+            () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
+    }
+    
     public static IMetric CreateRelayStateMetric(string targetName, string deviceModel, Func<bool> metricValueGetterFunction)
     {
         return MetricsHelper.CreateGauge("shelly_relay_state", "The state of the relay", targetName, deviceModel,
@@ -178,6 +184,12 @@ public static class PredefinedMetrics
     public static IMetric CreateInputFrequencyMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
     {
         return MetricsHelper.CreateGauge("shelly_input_frequency_hz", "Network frequency on the input in hertz", targetName, deviceModel,
+            () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
+    }
+
+    public static IMetric CreateTimeSinceUpdateMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
+    {
+        return MetricsHelper.CreateGauge("shelly_time_since_update_seconds", "Time since last update in seconds", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
     }
 }
