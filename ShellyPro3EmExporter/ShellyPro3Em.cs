@@ -80,52 +80,39 @@ public class ShellyPro3Em : Device
 
         TargetMeter[] targetMeters = target.targetMeters;
         
-        bool indexingFromZero = meterReadings.FirstOrDefault(reading => reading.meterIndex == 0) != null;
-        
         for (int i = 0; i < targetMeters.Length; i++)
         {
             MeterReading meterReading = new(targetMeters[i]);
             meterReadings[i] = meterReading;
-
-            int meterIndex;
-                
-            if (indexingFromZero)
-            {
-                meterIndex = meterReading.meterIndex;
-            }
-            else
-            {
-                meterIndex = meterReading.meterIndex - 1;
-            }
             
             if (!meterReading.voltageIgnored)
             {
-                gen2Deserializer.AddDeserializeSwitchVoltage(voltage => meterReading.voltage = voltage, meterIndex);
+                gen2Deserializer.AddDeserializeSwitchVoltage(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
             }
             
             if (!meterReading.activePowerIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterActivePower(power => meterReading.activePower = power, meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterActivePower(power => meterReading.activePower = power, meterReading.meterIndex);
             }
 
             if (!meterReading.apparentPowerIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterApparentPower(apparentPower => meterReading.apparentPower = apparentPower, meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterApparentPower(apparentPower => meterReading.apparentPower = apparentPower, meterReading.meterIndex);
             }
             
             if (!meterReading.powerFactorIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, meterReading.meterIndex);
             }
             
             if (!meterReading.currentIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterCurrent(current => meterReading.current = current, meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterCurrent(current => meterReading.current = current, meterReading.meterIndex);
             }
             
             if (!meterReading.frequencyIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterFrequency(frequency => meterReading.frequency = frequency, meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterFrequency(frequency => meterReading.frequency = frequency, meterReading.meterIndex);
             }
         }
 

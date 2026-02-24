@@ -46,35 +46,35 @@ public class Shelly3Em : Device
                 targetMeters[i].ignoreTotalReturned);
             
             meterReadings[i] = meterReading;
-
+            
             if (!meterReading.powerIgnored)
             {
-                gen1Deserializer.AddDeserializeEMeterPower(power => meterReading.power = power, targetMeters[i].index);
+                gen1Deserializer.AddDeserializeEMeterPower(power => meterReading.power = power, meterReading.meterIndex);
             }
             
             if (!meterReading.currentIgnored)
             {
-                gen1Deserializer.AddDeserializeEMeterCurrent(current => meterReading.current = current, targetMeters[i].index);
+                gen1Deserializer.AddDeserializeEMeterCurrent(current => meterReading.current = current, meterReading.meterIndex);
             }
             
             if (!meterReading.voltageIgnored)
             {
-                gen1Deserializer.AddDeserializeEMeterVoltage(voltage => meterReading.voltage = voltage, targetMeters[i].index);
+                gen1Deserializer.AddDeserializeEMeterVoltage(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
             }
             
             if (!meterReading.powerFactorIgnored)
             {
-                gen1Deserializer.AddDeserializeEMeterPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, targetMeters[i].index);
+                gen1Deserializer.AddDeserializeEMeterPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, meterReading.meterIndex);
             }
             
             if (!meterReading.totalIgnored)
             {
-                gen1Deserializer.AddDeserializeEMeterTotalEnergy(total => meterReading.total = total, targetMeters[i].index);
+                gen1Deserializer.AddDeserializeEMeterTotalEnergy(total => meterReading.total = total, meterReading.meterIndex);
             }
             
             if (!meterReading.totalReturnedIgnored)
             {
-                gen1Deserializer.AddDeserializeEMeterTotalReturnedEnergy(totalReturned => meterReading.totalReturned = totalReturned, targetMeters[i].index);
+                gen1Deserializer.AddDeserializeEMeterTotalReturnedEnergy(totalReturned => meterReading.totalReturned = totalReturned, meterReading.meterIndex);
             }       
         }
         

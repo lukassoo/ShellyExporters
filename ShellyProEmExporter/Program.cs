@@ -64,8 +64,8 @@ internal static class Program
 
             TargetMeter[] targetMeters =
             [
-                new(1),
-                new(2)
+                new(0),
+                new(1)
             ];
 
             config.targets.Add(new TargetDevice("Your Name for the device - like \"solar_power\" - keep it formatted like that, lowercase with underscores",

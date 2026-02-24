@@ -37,50 +37,50 @@ public class ShellyPro4Pm : Device
         {
             MeterReading meterReading = new(targetMeters[i]);
             meterReadings[i] = meterReading;
-
+            
             if (!targetMeters[i].ignoreCurrent)
             {
-                gen2Deserializer.AddDeserializeSwitchCurrent(current => meterReading.current = current, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchCurrent(current => meterReading.current = current, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreVoltage)
             {
-                gen2Deserializer.AddDeserializeSwitchVoltage(voltage => meterReading.voltage = voltage, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchVoltage(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreActivePower)
             {
-                gen2Deserializer.AddDeserializeSwitchActivePower(power => meterReading.activePower = power, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchActivePower(power => meterReading.activePower = power, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignorePowerFactor)
             {
-                gen2Deserializer.AddDeserializeSwitchPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreFrequency)
             {
-                gen2Deserializer.AddDeserializeSwitchFrequency(frequency => meterReading.frequency = frequency, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchFrequency(frequency => meterReading.frequency = frequency, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreTotalActiveEnergy)
             {
-                gen2Deserializer.AddDeserializeSwitchTotalEnergy(energy => meterReading.totalActiveEnergy = energy, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchTotalEnergy(energy => meterReading.totalActiveEnergy = energy, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreTotalReturnedActiveEnergy)
             {
-                gen2Deserializer.AddDeserializeSwitchTotalReturnedEnergy(energy => meterReading.totalReturnedActiveEnergy = energy, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchTotalReturnedEnergy(energy => meterReading.totalReturnedActiveEnergy = energy, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreTemperature)
             {
-                gen2Deserializer.AddDeserializeSwitchTemperature(temperature => meterReading.temperature = temperature, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchTemperature(temperature => meterReading.temperature = temperature, meterReading.meterIndex);
             }
             
             if (!targetMeters[i].ignoreOutput)
             {
-                gen2Deserializer.AddDeserializeSwitchOutputState(output => meterReading.output = output, targetMeters[i].index);
+                gen2Deserializer.AddDeserializeSwitchOutputState(output => meterReading.output = output, meterReading.meterIndex);
             }
         }
     }
