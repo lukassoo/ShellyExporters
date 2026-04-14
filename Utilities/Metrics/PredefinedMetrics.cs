@@ -50,25 +50,25 @@ public static class PredefinedMetrics
 
     public static IMetric CreatePhaseEnergyTotalMetric(string targetName, string deviceModel, int phase, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_total_wh", "Total Energy (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_total_wh", "Total Energy (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [phase.ToString()]);
     }
     
     public static IMetric CreatePhaseEnergyReturnedMetric(string targetName, string deviceModel, int phase, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_returned_total_wh", "Total Energy Returned (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_returned_total_wh", "Total Energy Returned (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [phase.ToString()]);
     }
     
     public static IMetric CreatePhaseTotalActiveEnergyMetric(string targetName, string deviceModel, int phase, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_active_total_wh", "Total Active Energy (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_active_total_wh", "Total Active Energy (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [phase.ToString()]);
     }
     
     public static IMetric CreatePhaseTotalActiveEnergyReturnedMetric(string targetName, string deviceModel, int phase, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_active_returned_total_wh", "Total Active Energy Returned (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_active_returned_total_wh", "Total Active Energy Returned (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture), phaseLabel, [phase.ToString()]);
     }
     
@@ -129,19 +129,19 @@ public static class PredefinedMetrics
     
     public static IMetric CreateTotalEnergyMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_total_wh", "Total Energy (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_total_wh", "Total Energy (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
     }
     
     public static IMetric CreateTotalActiveEnergyMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_active_total_wh", "Total Active Energy (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_active_total_wh", "Total Active Energy (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
     }
 
     public static IMetric CreateTotalActiveEnergyReturnedMetric(string targetName, string deviceModel, Func<float> metricValueGetterFunction)
     {
-        return MetricsHelper.CreateGauge("shelly_energy_active_returned_total_wh", "Total Active Energy Returned (Wh)", targetName, deviceModel,
+        return MetricsHelper.CreateCounter("shelly_energy_active_returned_total_wh", "Total Active Energy Returned (Wh)", targetName, deviceModel,
             () => metricValueGetterFunction().ToString("0.00", CultureInfo.InvariantCulture));
     }
     

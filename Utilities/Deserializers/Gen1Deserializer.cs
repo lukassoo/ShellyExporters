@@ -46,7 +46,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePower(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(document =>
         {
@@ -64,7 +64,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEMeterPower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterPower(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -77,7 +77,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEMeterReactivePower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterReactivePower(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -90,7 +90,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
 
-    public void AddDeserializeEMeterVoltage(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterVoltage(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -103,7 +103,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
 
-    public void AddDeserializeEMeterCurrent(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterCurrent(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -116,7 +116,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEMeterPowerFactor(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterPowerFactor(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -129,7 +129,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
 
-    public void AddDeserializeEMeterTotalEnergy(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterTotalEnergy(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -142,7 +142,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEMeterTotalReturnedEnergy(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEMeterTotalReturnedEnergy(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         
@@ -155,7 +155,7 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializedEMeterComputedCurrent(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializedEMeterComputedCurrent(Action<float> callback, int meterIndex)
     {
         cacheEMeters = true;
         

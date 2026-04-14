@@ -5,7 +5,7 @@ namespace Utilities.Deserializers;
 
 public class Gen2Deserializer : IDeserializer
 {
-    static readonly ILogger log = Log.ForContext<Gen1Deserializer>();
+    static readonly ILogger log = Log.ForContext<Gen2Deserializer>();
 
     readonly List<Action<JsonElement>> deserializationCallbacks = [];
     
@@ -198,7 +198,7 @@ public class Gen2Deserializer : IDeserializer
     
     // Power meter
     
-    public void AddDeserializePowerMeterVoltage(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterVoltage(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -207,7 +207,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterCurrent(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterCurrent(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -216,7 +216,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterActivePower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterActivePower(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -225,7 +225,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterPowerFactor(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterPowerFactor(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -234,7 +234,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterFrequency(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterFrequency(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -243,7 +243,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterApparentPower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterApparentPower(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -252,7 +252,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterTotalEnergy(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterTotalEnergy(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -261,7 +261,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializePowerMeterTotalReturnedEnergy(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializePowerMeterTotalReturnedEnergy(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -270,9 +270,9 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    // Energy meter
+    // Energy meter (EM1)
     
-    public void AddDeserializeEnergyMeterVoltage(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterVoltage_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -281,7 +281,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterCurrent(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterCurrent_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -290,7 +290,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterActivePower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterActivePower_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -299,7 +299,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterApparentPower(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterApparentPower_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -308,7 +308,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterPowerFactor(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterPowerFactor_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -317,7 +317,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterFrequency(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterFrequency_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -326,7 +326,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterPhaseTotalActiveEnergy(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterPhaseTotalActiveEnergy_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -335,7 +335,25 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy(Action<float> callback, int meterIndex = 0)
+    public void AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy_EM1(Action<float> callback, int meterIndex)
+    {
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float energy = resultElement.GetProperty($"em1data:{meterIndex}").GetProperty("total_act_ret_energy").GetSingle();
+            callback.Invoke(energy);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterTotalActiveEnergy_EM1(Action<float> callback, int meterIndex)
+    {
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float energy = resultElement.GetProperty($"em1data:{meterIndex}").GetProperty("total_act_energy").GetSingle();
+            callback.Invoke(energy);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterTotalReturnedActiveEnergy_EM1(Action<float> callback, int meterIndex)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -344,7 +362,83 @@ public class Gen2Deserializer : IDeserializer
         });
     }
 
-    public void AddDeserializeEnergyMeterTotalCurrent(Action<float> callback)
+    
+    
+    // Energy meter (EM)
+
+    static readonly Dictionary<int, string> indexToPhaseMap = new()
+    {
+        { 0, "a" },
+        { 1, "b" },
+        { 2, "c" }
+    };
+    
+    public void AddDeserializeEnergyMeterVoltage_EM(Action<float> callback, int meterIndex)
+    {
+        string phase = indexToPhaseMap[meterIndex];
+        
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float voltage = resultElement.GetProperty("em:0").GetProperty($"{phase}_voltage").GetSingle();
+            callback.Invoke(voltage);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterCurrent_EM(Action<float> callback, int meterIndex)
+    {
+        string phase = indexToPhaseMap[meterIndex];
+        
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float current = resultElement.GetProperty("em:0").GetProperty($"{phase}_current").GetSingle();
+            callback.Invoke(current);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterActivePower_EM(Action<float> callback, int meterIndex)
+    {
+        string phase = indexToPhaseMap[meterIndex];
+        
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float power = resultElement.GetProperty("em:0").GetProperty($"{phase}_act_power").GetSingle();
+            callback.Invoke(power);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterApparentPower_EM(Action<float> callback, int meterIndex)
+    {
+        string phase = indexToPhaseMap[meterIndex];
+
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float power = resultElement.GetProperty("em:0").GetProperty($"{phase}_aprt_power").GetSingle();
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterPowerFactor_EM(Action<float> callback, int meterIndex)
+    {
+        string phase = indexToPhaseMap[meterIndex];
+        
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float powerFactor = resultElement.GetProperty("em:0").GetProperty($"{phase}_pf").GetSingle();
+            callback.Invoke(powerFactor);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterFrequency_EM(Action<float> callback, int meterIndex)
+    {
+        string phase = indexToPhaseMap[meterIndex];
+        
+        deserializationCallbacks.Add(resultElement =>
+        {
+            float frequency = resultElement.GetProperty("em:0").GetProperty($"{phase}_freq").GetSingle();
+            callback.Invoke(frequency);
+        });
+    }
+    
+    public void AddDeserializeEnergyMeterTotalCurrent_EM(Action<float> callback)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -353,7 +447,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterTotalActivePower(Action<float> callback)
+    public void AddDeserializeEnergyMeterTotalActivePower_EM(Action<float> callback)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -362,7 +456,7 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterTotalApparentPower(Action<float> callback)
+    public void AddDeserializeEnergyMeterTotalApparentPower_EM(Action<float> callback)
     {
         deserializationCallbacks.Add(resultElement =>
         {
@@ -371,20 +465,24 @@ public class Gen2Deserializer : IDeserializer
         });
     }
     
-    public void AddDeserializeEnergyMeterTotalActiveEnergy(Action<float> callback)
+    public void AddDeserializeEnergyMeterPhaseTotalActiveEnergy_EM(Action<float> callback, int meterIndex)
     {
+        string phase = indexToPhaseMap[meterIndex];
+        
         deserializationCallbacks.Add(resultElement =>
         {
-            float energy = resultElement.GetProperty("emdata:0").GetProperty("total_act_energy").GetSingle();
+            float energy = resultElement.GetProperty("emdata:0").GetProperty($"{phase}_total_act_energy").GetSingle();
             callback.Invoke(energy);
         });
     }
     
-    public void AddDeserializeEnergyMeterTotalReturnedActiveEnergy(Action<float> callback)
+    public void AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy_EM(Action<float> callback, int meterIndex)
     {
+        string phase = indexToPhaseMap[meterIndex];
+
         deserializationCallbacks.Add(resultElement =>
         {
-            float energy = resultElement.GetProperty("emdata:0").GetProperty("total_act_ret_energy").GetSingle();
+            float energy = resultElement.GetProperty("emdata:0").GetProperty($"{phase}_total_act_ret_energy").GetSingle();
             callback.Invoke(energy);
         });
     }

@@ -57,53 +57,53 @@ public class ShellyProEm : Device
 
             if (!meterReading.voltageIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterVoltage(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterVoltage_EM1(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
             }
 
             if (!meterReading.currentIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterCurrent(current => meterReading.current = current, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterCurrent_EM1(current => meterReading.current = current, meterReading.meterIndex);
             }
             
             if (!meterReading.activePowerIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterActivePower(power => meterReading.activePower = power, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterActivePower_EM1(power => meterReading.activePower = power, meterReading.meterIndex);
             }
             
             if (!meterReading.apparentPowerIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterApparentPower(apparentPower => meterReading.apparentPower = apparentPower, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterApparentPower_EM1(apparentPower => meterReading.apparentPower = apparentPower, meterReading.meterIndex);
             }
             
             if (!meterReading.powerFactorIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterPowerFactor(powerFactor => meterReading.powerFactor = powerFactor, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterPowerFactor_EM1(powerFactor => meterReading.powerFactor = powerFactor, meterReading.meterIndex);
             }
 
             if (!meterReading.frequencyIgnored)
             {
-                gen2Deserializer.AddDeserializeEnergyMeterFrequency(frequency => meterReading.frequency = frequency, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterFrequency_EM1(frequency => meterReading.frequency = frequency, meterReading.meterIndex);
             }
         }
 
         if (!IsTotalActiveEnergyPhase1Ignored)
         {
-            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalActiveEnergy(energy => TotalActiveEnergyPhase1 = energy, 0);
+            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalActiveEnergy_EM1(energy => TotalActiveEnergyPhase1 = energy, 0);
         }
         
         if (!IsTotalActiveEnergyPhase2Ignored)
         {
-            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalActiveEnergy(energy => TotalActiveEnergyPhase2 = energy, 1);
+            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalActiveEnergy_EM1(energy => TotalActiveEnergyPhase2 = energy, 1);
         }
         
         if (!IsTotalActiveEnergyReturnedPhase1Ignored)
         {
-            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy(energy => TotalActiveEnergyReturnedPhase1 = energy, 0);
+            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy_EM1(energy => TotalActiveEnergyReturnedPhase1 = energy, 0);
         }
         
         if (!IsTotalActiveEnergyReturnedPhase2Ignored)
         {
-            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy(energy => TotalActiveEnergyReturnedPhase2 = energy, 1);
+            gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy_EM1(energy => TotalActiveEnergyReturnedPhase2 = energy, 1);
         }
     }
     

@@ -6,7 +6,8 @@ public class TargetDevice
     public string url;
     public string password;
     public float requestTimeoutTime = 3;
-    
+
+    public bool triphaseMode = true;
     public TargetMeter[] targetMeters;
     
     public bool ignoreTotalCurrent;

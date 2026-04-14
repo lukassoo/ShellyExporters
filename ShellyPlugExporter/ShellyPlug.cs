@@ -37,7 +37,7 @@ public class ShellyPlug : Device
 
         if (!IgnoreCurrentPower)
         {
-            gen1Deserializer.AddDeserializePower(power => CurrentlyUsedPower = power);
+            gen1Deserializer.AddDeserializePower(power => CurrentlyUsedPower = power, 0);
         }
 
         if (!IgnoreTemperature)

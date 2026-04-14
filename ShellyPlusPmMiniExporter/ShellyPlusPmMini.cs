@@ -64,12 +64,12 @@ public class ShellyPlusPmMini : Device
 
         if (!IgnoreTotalEnergy)
         {
-            gen2Deserializer.AddDeserializePowerMeterTotalEnergy(energy => TotalEnergy = energy);
+            gen2Deserializer.AddDeserializePowerMeterTotalEnergy(energy => TotalEnergy = energy, 0);
         }
 
         if (!IgnoreTotalEnergyReturned)
         {
-            gen2Deserializer.AddDeserializePowerMeterTotalReturnedEnergy(energy => TotalEnergyReturned = energy);
+            gen2Deserializer.AddDeserializePowerMeterTotalReturnedEnergy(energy => TotalEnergyReturned = energy, 0);
         }
         
         if (!IgnoreCurrentPower)
