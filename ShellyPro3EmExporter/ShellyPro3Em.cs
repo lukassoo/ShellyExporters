@@ -87,7 +87,7 @@ public class ShellyPro3Em : Device
             
             if (!meterReading.voltageIgnored)
             {
-                gen2Deserializer.AddDeserializeSwitchVoltage(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
+                gen2Deserializer.AddDeserializeEnergyMeterVoltage(voltage => meterReading.voltage = voltage, meterReading.meterIndex);
             }
             
             if (!meterReading.activePowerIgnored)
