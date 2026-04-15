@@ -15,6 +15,9 @@ public class ShellyPlug : Device
     public bool IgnoreTemperature { get; }
     public float Temperature { get; private set; }
     
+    public bool IgnoreTotalEnergy { get; }
+    public float TotalEnergy { get; private set; }
+    
     public ShellyPlug(TargetDevice target)
     {
         TargetName = target.name;
@@ -23,6 +26,7 @@ public class ShellyPlug : Device
         IgnoreCurrentPower = target.ignorePowerMetric;
         IgnoreTemperature = target.ignoreTemperatureMetric;
         IgnoreRelayState = target.ignoreRelayStateMetric;
+        IgnoreTotalEnergy = target.ignoreTotalEnergyMetric;
 
         HttpRequestHandler httpRequestHandler = new(targetUrl1, target.RequiresAuthentication());
         
@@ -48,6 +52,12 @@ public class ShellyPlug : Device
         if (!IgnoreRelayState)
         {
             gen1Deserializer.AddDeserializeRelayState(relayState => RelayStatus = relayState);
+        }
+        
+        if (!IgnoreTotalEnergy)
+        {
+            // The device reports energy in watt-minutes, so we need to convert to watt-hours to work like all the other devices
+            gen1Deserializer.AddDeserializeTotalEnergy(totalEnergy => TotalEnergy = totalEnergy / 60f, 0);
         }
     }
 }

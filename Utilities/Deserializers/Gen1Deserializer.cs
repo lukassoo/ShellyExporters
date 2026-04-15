@@ -66,6 +66,15 @@ public class Gen1Deserializer : IDeserializer
         });
     }
     
+    public void AddDeserializeTotalEnergy(Action<float> callback, int meterIndex)
+    {
+        deserializationCallbacks.Add(document =>
+        {
+            float totalEnergy = document.RootElement.GetProperty("meters")[meterIndex].GetProperty("total").GetSingle();
+            callback.Invoke(totalEnergy);
+        });
+    }
+    
     public void AddDeserializeRelayState(Action<bool> callback, int relayIndex = 0)
     {
         deserializationCallbacks.Add(document =>

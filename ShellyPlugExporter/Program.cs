@@ -122,6 +122,12 @@ internal static class Program
                 IMetric relayStateMetric = PredefinedMetrics.CreateRelayStateMetric(targetName, deviceModel, () => device.RelayStatus);
                 deviceMetrics.Add(relayStateMetric);
             }
+            
+            if (!device.IgnoreTotalEnergy)
+            {
+                IMetric totalEnergyMetric = PredefinedMetrics.CreateTotalEnergyMetric(targetName, deviceModel, () => device.TotalEnergy / 60f);
+                deviceMetrics.Add(totalEnergyMetric);
+            }
         }
     }
 
@@ -155,6 +161,14 @@ internal static class Program
             {
                 IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "relay_state", "The state of the relay",
                     () => device.RelayStatus ? "1" : "0");
+                
+                deviceMetrics.Add(metric);
+            }
+            
+            if (!device.IgnoreTotalEnergy)
+            {
+                IMetric metric = MetricsHelper.CreateGauge(metricPrefix + "total_energy", "The total energy used in watt-hours",
+                    () => device.TotalEnergy.ToString("F2", CultureInfo.InvariantCulture));
                 
                 deviceMetrics.Add(metric);
             }
