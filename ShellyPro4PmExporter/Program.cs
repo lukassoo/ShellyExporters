@@ -1,8 +1,9 @@
-﻿using System.Globalization;
+using System.Globalization;
 using NuGet.Versioning;
 using Serilog;
 using Utilities;
 using Utilities.Configs;
+using Utilities.Logging;
 using Utilities.Metrics;
 
 namespace ShellyPro4PmExporter;
@@ -46,6 +47,8 @@ internal static class Program
         catch (Exception exception)
         {
             log.Error(exception, "Exception in Main()");
+            
+            LogAdditions.CheckExceptionLogIndexError(exception, log);
             RuntimeAutomation.Shutdown("Exception in Main()");
         }
 

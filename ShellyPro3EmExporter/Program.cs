@@ -3,6 +3,7 @@ using NuGet.Versioning;
 using Serilog;
 using Utilities;
 using Utilities.Configs;
+using Utilities.Logging;
 using Utilities.Metrics;
 
 namespace ShellyPro3EmExporter;
@@ -27,6 +28,8 @@ internal static class Program
             if (!ConfigHelper.LoadAndUpdateConfig(configName, defaultPort, WriteExampleConfig, out Config<TargetDevice>? config))
             {
                 Console.WriteLine("[ERROR] Could not load config - returning");
+                Console.WriteLine("Some larger changes have been made to the exporter, please backup your old config and let the exporter generate a new one.");
+                Console.WriteLine("More info after startup with new config.");
                 return;
             }
             
@@ -42,10 +45,14 @@ internal static class Program
             {
                 RuntimeAutomation.Shutdown("Failed to start metrics server");
             }
+            
+            LogAdditions.LogEnergyMeterMetricChanges(log);
         }
         catch (Exception exception)
         {
             log.Error(exception, "Exception in Main()");
+            
+            LogAdditions.CheckExceptionLogIndexError(exception, log);
             RuntimeAutomation.Shutdown("Exception in Main()");
         }
 
@@ -152,29 +159,7 @@ internal static class Program
                     deviceMetrics.Add(frequencyMetric);
                 }
             }
-            
-            if (!device.IsTotalCurrentIgnored && device.TriphaseMode)
-            {
-                IMetric totalCurrentMetric = PredefinedMetrics.CreateTotalCurrentMetric(targetName, deviceModel, () => device.TotalCurrent);
-                deviceMetrics.Add(totalCurrentMetric);
-            }
-                            
-            if (!device.IsTotalActivePowerIgnored && device.TriphaseMode)
-            {
-                IMetric totalActivePowerMetric = PredefinedMetrics.CreateTotalActivePowerMetric(targetName, deviceModel, () => device.TotalActivePower);
-                deviceMetrics.Add(totalActivePowerMetric);
-            }
-                
-            if (!device.IsTotalApparentPowerIgnored && device.TriphaseMode)
-            {
-                IMetric totalApparentPowerMetric = PredefinedMetrics.CreateTotalApparentPowerMetric(targetName, deviceModel, () => device.TotalApparentPower);
-                deviceMetrics.Add(totalApparentPowerMetric);
-            }
 
-            // Not reporting the sum of total active energy and total active energy returned.
-            // These values should be calculated from the individual phase values.
-            // Only the old format still reports them as it doesn't use labels and for compatibility.
-            
             if (!device.IsTotalActiveEnergyPhase1Ignored)
             {
                 IMetric totalActiveEnergyPhase1Metric = PredefinedMetrics.CreatePhaseTotalActiveEnergyMetric(targetName, deviceModel, 1, () => device.TotalActiveEnergyPhase1);
@@ -283,56 +268,6 @@ internal static class Program
 
                     deviceMetrics.Add(frequencyMetric);
                 }
-            }
-            
-            if (!device.IsTotalCurrentIgnored && device.TriphaseMode)
-            {
-                string metricName = oldMetricPrefix + "total_current";
-                
-                IMetric totalCurrentMetric = MetricsHelper.CreateGauge(metricName, "Total Current (A)", 
-                    () => device.TotalCurrent.ToString("0.000", CultureInfo.InvariantCulture));
-                
-                deviceMetrics.Add(totalCurrentMetric);
-            }
-                            
-            if (!device.IsTotalActivePowerIgnored && device.TriphaseMode)
-            {
-                string metricName = oldMetricPrefix + "total_active_power";
-                
-                IMetric totalActivePowerMetric = MetricsHelper.CreateGauge(metricName, "Total Active Power (W)", 
-                    () => device.TotalActivePower.ToString("0.00", CultureInfo.InvariantCulture));
-                
-                deviceMetrics.Add(totalActivePowerMetric);
-            }
-                
-            if (!device.IsTotalApparentPowerIgnored && device.TriphaseMode)
-            {
-                string metricName = oldMetricPrefix + "total_apparent_power";
-                
-                IMetric totalApparentPowerMetric = MetricsHelper.CreateGauge(metricName, "Total Apparent Power (VA)", 
-                    () => device.TotalApparentPower.ToString("0.00", CultureInfo.InvariantCulture));
-                
-                deviceMetrics.Add(totalApparentPowerMetric);
-            }
-
-            if (!device.IsTotalActiveEnergyIgnored)
-            {
-                string metricName = oldMetricPrefix + "total_active_energy";   
-                
-                IMetric totalActiveEnergyMetric = MetricsHelper.CreateGauge(metricName, "Total Active Energy (Wh)", 
-                    () => device.TotalActiveEnergy.ToString("0.00", CultureInfo.InvariantCulture));
-                
-                deviceMetrics.Add(totalActiveEnergyMetric);
-            }
-            
-            if (!device.IsTotalActiveEnergyReturnedIgnored)
-            {
-                string metricName = oldMetricPrefix + "total_active_energy_returned";
-                
-                IMetric totalActiveEnergyReturnedMetric = MetricsHelper.CreateCounter(metricName, "Total Active Energy Returned to the grid (Wh)", 
-                    () => device.TotalActiveEnergyReturned.ToString("0.00", CultureInfo.InvariantCulture));
-                
-                deviceMetrics.Add(totalActiveEnergyReturnedMetric);
             }
 
             if (!device.IsTotalActiveEnergyPhase1Ignored)

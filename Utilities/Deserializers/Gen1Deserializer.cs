@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Serilog;
+using Utilities.Logging;
 
 namespace Utilities.Deserializers;
 
@@ -22,10 +23,20 @@ public class Gen1Deserializer : IDeserializer
             {
                 EMetersElement = jsonDocument.RootElement.GetProperty("emeters");
             }
-            
-            foreach (Action<JsonDocument> callback in deserializationCallbacks)
+
+            try
             {
-                callback.Invoke(jsonDocument);
+                foreach (Action<JsonDocument> callback in deserializationCallbacks)
+                {
+                    callback.Invoke(jsonDocument);
+                }
+            }
+            catch (Exception exception)
+            {
+                log.Error(exception, "Exception during deserialization callbacks");
+                
+                LogAdditions.CheckExceptionLogIndexError(exception, log);
+                return false;
             }
             
             return true;

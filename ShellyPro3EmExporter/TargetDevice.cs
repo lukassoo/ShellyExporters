@@ -10,13 +10,6 @@ public class TargetDevice
     public bool triphaseMode = true;
     public TargetMeter[] targetMeters;
     
-    public bool ignoreTotalCurrent;
-    public bool ignoreTotalActivePower;
-    public bool ignoreTotalApparentPower;
-
-    public bool ignoreTotalActiveEnergy;
-    public bool ignoreTotalActiveReturnedEnergy;
-    
     public bool ignoreTotalActiveEnergyPhase1;
     public bool ignoreTotalActiveEnergyPhase2;
     public bool ignoreTotalActiveEnergyPhase3;

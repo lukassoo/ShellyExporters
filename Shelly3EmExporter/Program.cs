@@ -3,6 +3,7 @@ using NuGet.Versioning;
 using Serilog;
 using Utilities;
 using Utilities.Configs;
+using Utilities.Logging;
 using Utilities.Metrics;
 
 namespace Shelly3EmExporter;
@@ -42,10 +43,14 @@ internal static class Program
             {
                 RuntimeAutomation.Shutdown("Failed to start metrics server");
             }
+            
+            LogAdditions.LogEnergyMeterMetricChanges(log);
         }
         catch (Exception exception)
         {
             log.Error(exception, "Exception in Main()");
+            
+            LogAdditions.CheckExceptionLogIndexError(exception, log);
             RuntimeAutomation.Shutdown("Exception in Main()");
         }
         

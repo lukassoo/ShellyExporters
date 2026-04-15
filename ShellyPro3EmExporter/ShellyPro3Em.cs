@@ -13,21 +13,6 @@ public class ShellyPro3Em : Device
 
     public bool TriphaseMode { get; private set; }
     
-    public bool IsTotalActivePowerIgnored { get; }
-    public float TotalActivePower { get; private set; }
-    
-    public bool IsTotalApparentPowerIgnored { get; }
-    public float TotalApparentPower { get; private set; }
-
-    public bool IsTotalCurrentIgnored { get; }
-    public float TotalCurrent { get; private set; }
-    
-    public bool IsTotalActiveEnergyIgnored { get; }
-    public float TotalActiveEnergy { get; private set; }
-    
-    public bool IsTotalActiveEnergyReturnedIgnored { get; }
-    public float TotalActiveEnergyReturned { get; private set; }
-    
     public bool IsTotalActiveEnergyPhase1Ignored { get; }
     public float TotalActiveEnergyPhase1 { get; private set; }
     
@@ -52,13 +37,6 @@ public class ShellyPro3Em : Device
         string targetUrl = target.url + "/rpc";
 
         TriphaseMode = target.triphaseMode;
-        
-        IsTotalCurrentIgnored = target.ignoreTotalCurrent;
-        IsTotalActivePowerIgnored = target.ignoreTotalActivePower;
-        IsTotalApparentPowerIgnored = target.ignoreTotalApparentPower;
-        
-        IsTotalActiveEnergyIgnored = target.ignoreTotalActiveEnergy;
-        IsTotalActiveEnergyReturnedIgnored = target.ignoreTotalActiveReturnedEnergy;
             
         IsTotalActiveEnergyPhase1Ignored = target.ignoreTotalActiveEnergyPhase1;
         IsTotalActiveEnergyPhase2Ignored = target.ignoreTotalActiveEnergyPhase2;
@@ -236,64 +214,19 @@ public class ShellyPro3Em : Device
                 gen2Deserializer.AddDeserializeEnergyMeterPhaseTotalReturnedActiveEnergy_EM1(energy => TotalActiveEnergyReturnedPhase3 = energy, 2);
             }
         }
-            
-        if (!IsTotalActivePowerIgnored)
-        {
-            if (TriphaseMode)
-            {
-                gen2Deserializer.AddDeserializeEnergyMeterTotalActivePower_EM(power => TotalActivePower = power);
-            }
-            else
-            {
-                // Not exposed as a sum in this mode 
-            }
-        }
-        
-        if (!IsTotalApparentPowerIgnored)
-        {
-            if (TriphaseMode)
-            {
-                gen2Deserializer.AddDeserializeEnergyMeterTotalApparentPower_EM(power => TotalApparentPower = power);
-            }
-            else
-            {
-                // Not exposed as a sum in this mode
-            }
-        }
-        
-        if (!IsTotalCurrentIgnored)
-        {
-            if (TriphaseMode)
-            {
-                gen2Deserializer.AddDeserializeEnergyMeterTotalCurrent_EM(current => TotalCurrent = current);
-            }
-            else
-            {
-                // Not exposed as a sum in this mode
-            }
-        }
     }
 
     public override async Task<bool> UpdateMetrics()
     {
-        if (!await base.UpdateMetrics())
+        if (await base.UpdateMetrics()) return true;
+        
+        if (ErrorIfMetricsUpdateFails)
         {
-            if (ErrorIfMetricsUpdateFails)
-            {
-                log.Error("Failed to update metrics, are you sure the device profile matches the configuration? (Config: triphaseMode: {triphaseMode})", TriphaseMode);
-            }
-            
-            return false;
+            log.Error("Failed to update metrics, are you sure the device profile matches the configuration? (Config: triphaseMode: {triphaseMode})", TriphaseMode);
         }
-        
-        // Manually calculate energy totals.
-        // This way they can stay exposed regardless of the mode.
-        // These should actually not be exposed directly since they can be calculated from the per-phase values.
-        // But for backwards compatibility they stay.
-        TotalActiveEnergy = TotalActiveEnergyPhase1 + TotalActiveEnergyPhase2 + TotalActiveEnergyPhase3;
-        TotalActiveEnergyReturned = TotalActiveEnergyReturnedPhase1 + TotalActiveEnergyReturnedPhase2 + TotalActiveEnergyReturnedPhase3;
-        
-        return true;
+            
+        return false;
+
     }
 
     public MeterReading[] GetMeterReadings()

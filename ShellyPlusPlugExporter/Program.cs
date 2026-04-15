@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using NuGet.Versioning;
 using Serilog;
 using Utilities;

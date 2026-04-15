@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Serilog;
+using Utilities.Logging;
 
 namespace Utilities.Deserializers;
 
@@ -15,10 +16,20 @@ public class Gen2Deserializer : IDeserializer
         {
             using JsonDocument jsonDocument = JsonDocument.Parse(jsonString);
             JsonElement resultElement = jsonDocument.RootElement.GetProperty("result");
-            
-            foreach (Action<JsonElement> callback in deserializationCallbacks)
+
+            try
             {
-                callback.Invoke(resultElement);
+                foreach (Action<JsonElement> callback in deserializationCallbacks)
+                {
+                    callback.Invoke(resultElement);
+                }
+            }
+            catch (Exception exception)
+            {
+                log.Error(exception, "Exception during deserialization callbacks");
+
+                LogAdditions.CheckExceptionLogIndexError(exception, log);
+                return false;
             }
             
             return true;
@@ -435,33 +446,6 @@ public class Gen2Deserializer : IDeserializer
         {
             float frequency = resultElement.GetProperty("em:0").GetProperty($"{phase}_freq").GetSingle();
             callback.Invoke(frequency);
-        });
-    }
-    
-    public void AddDeserializeEnergyMeterTotalCurrent_EM(Action<float> callback)
-    {
-        deserializationCallbacks.Add(resultElement =>
-        {
-            float current = resultElement.GetProperty("em:0").GetProperty("total_current").GetSingle();
-            callback.Invoke(current);
-        });
-    }
-    
-    public void AddDeserializeEnergyMeterTotalActivePower_EM(Action<float> callback)
-    {
-        deserializationCallbacks.Add(resultElement =>
-        {
-            float power = resultElement.GetProperty("em:0").GetProperty("total_act_power").GetSingle();
-            callback.Invoke(power);
-        });
-    }
-    
-    public void AddDeserializeEnergyMeterTotalApparentPower_EM(Action<float> callback)
-    {
-        deserializationCallbacks.Add(resultElement =>
-        {
-            float power = resultElement.GetProperty("em:0").GetProperty("total_aprt_power").GetSingle();
-            callback.Invoke(power);
         });
     }
     
