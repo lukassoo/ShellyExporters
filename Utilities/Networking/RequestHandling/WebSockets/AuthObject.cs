@@ -12,9 +12,11 @@ public class AuthObject : IJsonOnSerializing
 {
     [JsonPropertyName("realm")] public string? Realm { get; }
     [JsonPropertyName("username")] public string Username => "admin";
-    [JsonPropertyName("nonce")] public int? Nonce { get; set; }
+    [JsonPropertyName("nonce")] public object? Nonce { get; set; }
     [JsonPropertyName("cnonce")] public int? Cnonce { get; set; }
+    [JsonPropertyName("nc")] public string? NonceCountText => UsesNonceCount ? nc?.ToString("x8") : null;
     [JsonIgnore] public int? nc;
+    [JsonIgnore] public bool UsesNonceCount { get; init; }
     [JsonPropertyName("response")] public string? Response { get; set; }
     [JsonPropertyName("algorithm")] public string Algorithm => "SHA-256";
 
@@ -31,7 +33,13 @@ public class AuthObject : IJsonOnSerializing
     public void OnSerializing()
     {
         Cnonce += 1;
-        Response = Sha256HexHashString(ha1 + ":" + Nonce + ":" + nc + ":" + Cnonce + ":auth:" + ha2);
+
+        if (UsesNonceCount)
+        {
+            nc += 1;
+        }
+
+        Response = Sha256HexHashString(ha1 + ":" + Nonce + ":" + (UsesNonceCount ? nc?.ToString("x8") : nc?.ToString()) + ":" + Cnonce + ":auth:" + ha2);
     }
     
     string Sha256HexHashString(string text)
