@@ -21,14 +21,14 @@ For me to write another exporter, I will need:
 
 ## Example Grafana Dashboard Showcase
 
-Shelly Plug
+Shelly Plug  
 ![Shelly Plug](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPlugDashboard.png)
 
-Shelly Plus Plug
+Shelly Plus Plug  
 ![Shelly Plus Plug](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPlusPlugDashboard.png)
 
-Shelly 3 EM
+Shelly 3 EM  
 ![Shelly 3 EM](https://raw.githubusercontent.com/wiki/lukassoo/ShellyExporters/images/shelly3EmDashboard.png)
 
-Shelly Pro 3 EM
+Shelly Pro 3 EM  
 ![Shelly Pro 3 EM](https://github.com/lukassoo/ShellyExporters/wiki/images/shellyPro3EmDashboard.png)
